@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>주차별 담당 업무 현황</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; background-color: #f4f7f6; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+        .today-highlight { background-color: #fff9c4 !important; font-weight: bold; border: 2px solid #fbc02d; }
+        h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <h2>📅 주차별 담당 업무 표</h2>
+    <table id="scheduleTable">
+        <thead>
+            <tr>
+                <th>주차</th>
+                <th>반주</th>
+                <th>찬양</th>
+                <th>찬율</th>
+                <th>손유희</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script src="data.js"></script>
+    <script>
+        const tbody = document.querySelector('#scheduleTable tbody');
+        const now = new Date();
+        
+        // 간단한 주차 계산 로직 (수동으로 '오늘'을 지정하고 싶으면 직접 수정 가능)
+        // 여기서는 데이터의 'week' 텍스트와 현재 월/주차를 매칭하거나 순서대로 노출합니다.
+        
+        scheduleData.forEach((item, index) => {
+            const row = document.createElement('tr');
+            
+            // 예시: 현재 날짜의 '일'을 기준으로 대략적인 주차 강조 (운영 방식에 따라 조정 가능)
+            const currentWeekOfMonth = Math.ceil(now.getDate() / 7);
+            if (index + 1 === currentWeekOfMonth) {
+                row.classList.add('today-highlight');
+            }
+
+            row.innerHTML = `
+                <td>${item.week}</td>
+                <td>${item.piano}</td>
+                <td>${item.praise}</td>
+                <td>${item.dance}</td>
+                <td>${item.hand}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    </script>
+</body>
+</html>
