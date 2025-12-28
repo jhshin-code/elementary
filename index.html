@@ -2,232 +2,242 @@
 <html lang="ko">
 <head>
     <meta charset="utf-8"/>
-    <title>2026 기능 요약표 (기능 통합형)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 기능 요약표 (월별 접기 추가)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; padding: 20px; }
-        #table-container { max-width: 1000px; margin: 0 auto; padding-top: 60px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        td, th { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        
-        /* 강조 효과 */
-        tr.highlight td { background-color: #fff8e1 !important; border: 2px solid #ffc107; }
-        .font-enlarge { font-size: 1.2rem !important; font-weight: bold; }
-        mark { background: #fffd54; color: black; font-weight: bold; }
-
-        /* 디자인 요소 */
-        .header { cursor: pointer; background-color: #ffffff !important; }
-        .group { border-radius: 12px; overflow: hidden; margin-bottom: 25px; display: block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; padding: 20px; margin: 0; color: #333; }
+        #table-container { max-width: 1000px; margin: 80px auto 40px; }
         
         /* 컨트롤 패널 */
-        .controls { position: fixed; top: 0; left: 0; right: 0; background: white; padding: 10px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; display: flex; justify-content: center; gap: 10px; align-items: center; }
-        .search-box { display: flex; gap: 5px; background: #eee; padding: 5px; border-radius: 8px; }
+        .controls { 
+            position: fixed; top: 0; left: 0; right: 0; 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 12px 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            z-index: 1000; 
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; 
+        }
+
+        /* 월별 그룹 컨테이너 */
+        .month-group { margin-bottom: 20px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         
-        button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        /* 월 헤더 스타일 */
+        .month-header { 
+            background: #4a90e2; color: white; padding: 12px 20px; 
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .month-header::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; }
+        .month-group.collapsed .month-header::after { transform: rotate(-90deg); }
+        .month-content { display: block; padding: 15px; }
+        .month-group.collapsed .month-content { display: none; }
+
+        /* 주차별 카드 (기존 스타일 유지) */
+        .week-card { 
+            background-color: #ffffff; border-radius: 10px; 
+            overflow: hidden; margin-bottom: 15px; 
+            border: 1px solid #e1e4e8; transition: box-shadow 0.2s;
+        }
+        .week-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .week-header { cursor: pointer; padding: 15px 20px; }
+        
+        /* 강조 및 마크 스타일 */
+        .highlight { border: 2px solid #ffc107 !important; background-color: #fffdf5 !important; }
+        mark { background: #fffd54; color: black; font-weight: bold; }
+
+        /* 테이블 디자인 */
+        .people-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .people-table td { border: 1px solid #f0f0f0; padding: 10px 5px; text-align: center; font-size: 0.9rem; }
+        .praise-link { color: #4a90e2; text-decoration: none; font-weight: bold; }
+
+        /* 버튼 */
+        button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-green { background: #28a745; color: white; }
         .btn-blue { background: #007bff; color: white; }
         .btn-yellow { background: #ffc107; color: black; }
-        button:hover { opacity: 0.8; }
+        input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 100px; }
     </style>
 </head>
 <body>
 
 <div class="controls">
-    <button id="expand-toggle-button" onclick="toggleExpandAll()" class="btn-green">전체 펼치기</button>
-    <div class="search-box">
-        <input id="search-name" placeholder="이름 입력" type="text" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100px;"/>
-        <button onclick="highlightName()" class="btn-blue">검색</button>
-        <button onclick="showMyFunctions()" class="btn-yellow">내 기능 전체보기</button>
-    </div>
-    <button onclick="captureVisible()" class="btn-blue">📸 캡처하기</button>
+    <button onclick="toggleExpandAllMonths()" class="btn-green">모든 달 펼치기/접기</button>
+    <input id="search-name" placeholder="이름 입력" type="text" onkeyup="if(window.event.keyCode==13){highlightName()}"/>
+    <button onclick="highlightName()" class="btn-blue">검색</button>
+    <button onclick="showMyFunctions()" class="btn-yellow">내 기능 보기</button>
+    <button onclick="captureVisible()" class="btn-blue">📸 캡처</button>
 </div>
 
 <div id="table-container">
     <h1 style="text-align:center;">2026 기능 요약표</h1>
+    <p style="text-align:center; color:#6c757d; font-size:0.9rem;">※ 이번 달 일정은 자동으로 펼쳐져 있습니다.</p>
     <div id="dynamic-content"></div>
 </div>
 
 <script>
-let globalData = []; // CSV 데이터를 전역 저장
-let expanded = false;
+let globalData = [];
+let allMonthsExpanded = false;
 
-// 1. CSV 데이터 로드
 window.onload = function() {
     Papa.parse("data.csv", {
-        download: true,
-        header: true,
+        download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
-            globalData = results.data.filter(row => row.날짜); // 빈 줄 제거
-            renderTable(globalData);
+            globalData = results.data;
+            renderTableByMonth(globalData);
             highlightThisWeek();
         }
     });
 };
 
-// 2. 표 생성 함수
-function renderTable(data) {
+function renderTableByMonth(data) {
     const container = document.getElementById('dynamic-content');
     container.innerHTML = "";
 
-    data.forEach((row) => {
-        const tbody = document.createElement('tbody');
-        tbody.className = "group";
-        
-        const praiseHTML = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank" style="text-decoration:none;">🔗 ${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
+    // 1. 데이터를 월별로 그룹화
+    const months = {};
+    data.forEach(row => {
+        if (!row.날짜) return;
+        const monthKey = row.날짜.substring(0, 7); // "2025-01"
+        if (!months[monthKey]) months[monthKey] = [];
+        months[monthKey].push(row);
+    });
 
-        tbody.innerHTML = `
-            <tr class="header" data-date="${row.날짜}" onclick="toggleRow('${row.날짜}')">
-                <td colspan="6" style="text-align:left; padding:15px 20px; word-break: keep-all; overflow-wrap: break-word;">
-                    <span style="color:#007bff; font-weight:bold; font-size:0.9rem;">${row.날짜} (일)</span><br/>
-                    <b style="font-size:1.15rem;">${row.과}과: ${row.제목}</b> 
-                    <small style="color:#666; margin-left:8px;">(${row.말씀 || ''})</small>
-                    
-                    <div style="margin-top:10px; display: flex; flex-direction: column; gap: 6px; color:#444; font-size:0.95rem; line-height:1.5;">
-                        <div style="display: flex; align-items: flex-start; gap: 5px;">
-                            <span style="white-space: nowrap;">🎵 찬양:</span>
-                            <span>${praiseHTML}</span>
-                        </div>
-                        <div style="display: flex; align-items: flex-start; gap: 5px;">
-                            <span style="white-space: nowrap;">📖 암송:</span>
-                            <span style="color:#555;">${row.암송말씀 || '-'}</span>
+    // 2. 현재 달 확인
+    const todayStr = new Date().toISOString().substring(0, 7);
+
+    // 3. 월별 렌더링
+    Object.keys(months).sort().forEach(monthKey => {
+        const monthGroup = document.createElement('div');
+        monthGroup.className = "month-group";
+        monthGroup.id = `month-${monthKey}`;
+        
+        // 이번 달이 아니면 접어두기
+        if (monthKey !== todayStr) monthGroup.classList.add('collapsed');
+
+        const displayMonth = monthKey.replace('-', '년 ') + '월';
+        
+        let weeksHtml = "";
+        months[monthKey].forEach(row => {
+            const praiseHTML = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank" class="praise-link">${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
+            
+            weeksHtml += `
+                <div class="week-card" id="week-${row.날짜}">
+                    <div class="week-header" onclick="toggleWeek('${row.날짜}')">
+                        <span style="color:#4a90e2; font-weight:bold; font-size:0.85rem;">${row.날짜} (일)</span><br/>
+                        <b style="font-size:1.1rem;">${row.과}과: ${row.제목}</b> 
+                        <small style="color:#888;">(${row.말씀 || ''})</small>
+                        <div style="margin-top:10px; font-size:0.9rem; line-height:1.5; color:#555;">
+                            🎵 찬양: ${praiseHTML} <br> 📖 암송: ${row.암송말씀 || '-'}
                         </div>
                     </div>
-                </td>
-            </tr>
-            <tr class="people" data-date="${row.날짜}" style="display:none">
-                <td colspan="6" style="padding:0;">
-                    <table style="width:100%; border:none; table-layout: fixed;"> <tr style="background:#f1f1f1; font-size:0.85rem; font-weight:bold;">
-                            <td style="width:60px;">구분</td><td>🎹 반주</td><td>🎤 찬양</td><td>💃 찬율</td><td>🗣️ 암송</td><td>👐 손유희</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight:bold; color:#28a745; background:#fafafa;">1반</td>
-                            <td class="role-cell">${row.반주1 || ''}</td>
-                            <td class="role-cell">${row.찬양1 || ''}</td>
-                            <td class="role-cell">${row.찬율1 || ''}</td>
-                            <td class="role-cell">${row.암송1 || ''}</td>
-                            <td class="role-cell">${row.손유희1 || ''}</td>
-                        </tr>
-                        <tr style="border-top: 1px solid #eee;">
-                            <td style="font-weight:bold; color:#007bff; background:#fafafa;">2반</td>
-                            <td class="role-cell">${row.반주2 || ''}</td>
-                            <td class="role-cell">${row.찬양2 || ''}</td>
-                            <td class="role-cell">${row.찬율2 || ''}</td>
-                            <td class="role-cell">${row.암송2 || ''}</td>
-                            <td class="role-cell">${row.손유희2 || ''}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        `;
-        container.appendChild(tbody);
-    });
-}
-
-// 3. 이름 검색 및 강조 (전체 펼치기 포함)
-function highlightName() {
-    const name = document.getElementById("search-name").value.trim();
-    const cells = document.querySelectorAll(".role-cell");
-    const peopleRows = document.querySelectorAll(".people");
-
-    // 초기화
-    cells.forEach(td => {
-        td.innerHTML = td.innerHTML.replace(/<mark>|<\/mark>/g, '');
-        td.style.backgroundColor = "";
-    });
-
-    if (!name) return;
-
-    cells.forEach(td => {
-        if (td.innerText.includes(name)) {
-            const regex = new RegExp(name, "g");
-            td.innerHTML = td.innerHTML.replace(regex, `<mark>${name}</mark>`);
-            
-            const parentRow = td.closest(".people");
-            parentRow.style.display = ''; // 일치하는 행 펼치기
-            parentRow.previousElementSibling.classList.add('font-enlarge');
-        }
-    });
-}
-
-// 4. 내 기능 모아보기 (팝업)
-function showMyFunctions() {
-    const name = document.getElementById("search-name").value.trim();
-    if (!name) { alert("이름을 입력하세요."); return; }
-
-    let results = [];
-    const roles = ["반주", "찬양", "찬율", "암송", "손유희"];
-
-    globalData.forEach(row => {
-        // 1반 체크
-        roles.forEach((role, i) => {
-            const val1 = row[`${role}${i+1}`] || row[`${role}1`]; // 헤더 명칭 대응
-            if (row['반주1']?.includes(name)) { /* 로직 생략 - 아래에서 CSV 기반으로 정밀 체크 */ }
+                    <div class="week-people" id="people-${row.날짜}" style="display:none; padding:0 15px 15px;">
+                        <table class="people-table">
+                            <tr style="background:#f8f9fa; font-size:0.8rem; font-weight:bold;">
+                                <td style="width:45px;">구분</td><td>🎹반주</td><td>🎤찬양</td><td>💃찬율</td><td>🗣️암송</td><td>👐손유희</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#28a745; font-weight:bold;">1반</td>
+                                <td class="role-cell">${row.반주1||''}</td><td class="role-cell">${row.찬양1||''}</td><td class="role-cell">${row.찬율1||''}</td><td class="role-cell">${row.암송1||''}</td><td class="role-cell">${row.손유희1||''}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#007bff; font-weight:bold;">2반</td>
+                                <td class="role-cell">${row.반주2||''}</td><td class="role-cell">${row.찬양2||''}</td><td class="role-cell">${row.찬율2||''}</td><td class="role-cell">${row.암송2||''}</td><td class="role-cell">${row.손유희2||''}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>`;
         });
-        
-        // 정밀 체크 (CSV 컬럼명 기반)
-        const checkRole = (roleKey, roleName, className) => {
-            if (row[roleKey] && row[roleKey].includes(name)) {
-                results.push({ date: row.날짜, subject: row.제목, role: `${className} ${roleName}` });
-            }
-        };
 
-        ["반주1","찬양1","찬율1","암송1","손유희1"].forEach(k => checkRole(k, k.replace('1',''), "1반"));
-        ["반주2","찬양2","찬율2","암송2","손유희2"].forEach(k => checkRole(k, k.replace('2',''), "2반"));
+        monthGroup.innerHTML = `
+            <div class="month-header" onclick="toggleMonth('${monthKey}')">${displayMonth}</div>
+            <div class="month-content">${weeksHtml}</div>`;
+        container.appendChild(monthGroup);
     });
-
-    if (results.length === 0) { alert("데이터가 없습니다."); return; }
-
-    let html = `<h3>[${name}]님의 담당 내역</h3><table style='width:100%; border-collapse:collapse;' border='1'>
-                <tr style='background:#eee'><th>날짜</th><th>과제</th><th>기능</th></tr>`;
-    results.forEach(r => html += `<tr><td>${r.date}</td><td>${r.subject}</td><td>${r.role}</td></tr>`);
-    html += "</table>";
-
-    const popup = window.open("", "_blank", "width=600,height=500");
-    popup.document.write(`<html><head><style>body{font-family:sans-serif;padding:20px} table{width:100%;text-align:center;border-collapse:collapse;}</style></head><body>${html}</body></html>`);
 }
 
-// 5. 이번 주 강조
+function toggleMonth(monthKey) {
+    const el = document.getElementById(`month-${monthKey}`);
+    el.classList.toggle('collapsed');
+}
+
+function toggleWeek(date) {
+    const el = document.getElementById(`people-${date}`);
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function toggleExpandAllMonths() {
+    allMonthsExpanded = !allMonthsExpanded;
+    document.querySelectorAll('.month-group').forEach(group => {
+        if (allMonthsExpanded) group.classList.remove('collapsed');
+        else group.classList.add('collapsed');
+    });
+}
+
 function highlightThisWeek() {
     const today = new Date();
     const day = today.getDay();
     let target = new Date();
-    target.setDate(today.getDate() + ((7 - day) % 7)); 
-    const targetStr = target.toISOString().split('T')[0];
+    target.setDate(today.getDate() + ((7 - day) % 7));
+    const targetStr = target.toISOString().substring(0, 10);
+    const monthStr = targetStr.substring(0, 7);
 
-    const header = document.querySelector(`.header[data-date='${targetStr}']`);
-    if (header) {
-        header.classList.add('highlight', 'font-enlarge');
-        toggleRow(targetStr);
-        header.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 1. 해당 월 펼치기
+    const monthEl = document.getElementById(`month-${monthStr}`);
+    if (monthEl) monthEl.classList.remove('collapsed');
+
+    // 2. 해당 주차 강조 및 펼치기
+    const weekEl = document.getElementById(`week-${targetStr}`);
+    const peopleEl = document.getElementById(`people-${targetStr}`);
+    if (weekEl && peopleEl) {
+        weekEl.classList.add('highlight');
+        peopleEl.style.display = 'block';
+        weekEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
-// 6. 기타 보조 기능 (캡처, 토글 등)
-function toggleRow(date) {
-    const row = document.querySelector(`.people[data-date='${date}']`);
-    row.style.display = row.style.display === 'none' ? '' : 'none';
+function highlightName() {
+    const name = document.getElementById("search-name").value.trim();
+    if (!name) return;
+    document.querySelectorAll('.role-cell').forEach(td => {
+        td.innerHTML = td.innerHTML.replace(/<mark>|<\/mark>/g, '');
+        if (td.innerText.includes(name)) {
+            td.innerHTML = `<mark>${name}</mark>`;
+            const weekCard = td.closest('.week-card');
+            const monthGroup = td.closest('.month-group');
+            weekCard.querySelector('.week-people').style.display = 'block';
+            monthGroup.classList.remove('collapsed');
+        }
+    });
 }
 
-function toggleExpandAll() {
-    expanded = !expanded;
-    document.querySelectorAll('.people').forEach(r => r.style.display = expanded ? '' : 'none');
-    document.getElementById('expand-toggle-button').innerText = expanded ? "전체 닫기" : "전체 펼치기";
+function showMyFunctions() {
+    const name = document.getElementById("search-name").value.trim();
+    if (!name) { alert("이름을 입력하세요."); return; }
+    let results = [];
+    globalData.forEach(row => {
+        ["반주","찬양","찬율","암송","손유희"].forEach(role => {
+            if (row[role+"1"]?.includes(name)) results.push({d:row.날짜, t:row.제목, r:`1반 ${role}`});
+            if (row[role+"2"]?.includes(name)) results.push({d:row.날짜, t:row.제목, r:`2반 ${role}`});
+        });
+    });
+    if (results.length === 0) { alert("내역이 없습니다."); return; }
+    let html = `<h3>[${name}] 담당 내역</h3><table border="1" style="width:100%; border-collapse:collapse; text-align:center;">
+                <tr style="background:#eee"><th>날짜</th><th>주제</th><th>기능</th></tr>`;
+    results.forEach(r => html += `<tr><td>${r.d}</td><td>${r.t}</td><td>${r.r}</td></tr>`);
+    const win = window.open("", "_blank", "width=500,height=400");
+    win.document.write(html + "</table>");
 }
 
 function captureVisible() {
-    // 펼쳐진 모든 항목 캡처
-    const target = document.getElementById('table-container');
-    html2canvas(target, { scale: 2, backgroundColor: "#f4f4f4" }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = '2025_기능일정_전체.png';
-        link.href = canvas.toDataURL();
-        link.click();
+    html2canvas(document.getElementById('table-container'), {scale:2}).then(canvas => {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL();
+        a.download = '기능일정.png';
+        a.click();
     });
 }
 </script>
 </body>
-
 </html>
-
-
