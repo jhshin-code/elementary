@@ -3,139 +3,132 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 기능 요약표 (월별 접기 추가)</title>
+    <title>2025 기능 요약표</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
+        :root { --primary-color: #4a90e2; --highlight-bg: #fffdf5; --highlight-border: #ffc107; }
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; padding: 20px; margin: 0; color: #333; }
-        #table-container { max-width: 1000px; margin: 80px auto 40px; }
+        #table-container { max-width: 1000px; margin: 90px auto 40px; }
         
-        /* 컨트롤 패널 */
+        /* 상단 고정 메뉴 */
         .controls { 
             position: fixed; top: 0; left: 0; right: 0; 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 12px 20px; 
+            background: #ffffff; padding: 12px 20px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            z-index: 1000; 
-            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; 
+            z-index: 1000; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; 
         }
 
-        /* 월별 그룹 컨테이너 */
-        .month-group { margin-bottom: 20px; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        
-        /* 월 헤더 스타일 */
-        .month-header { 
-            background: #4a90e2; color: white; padding: 12px 20px; 
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+        /* 월별 그룹 디자인 */
+        .month-section { margin-bottom: 25px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
+        .month-label { 
+            background: var(--primary-color); color: white; padding: 15px 25px; 
+            font-size: 1.15rem; font-weight: bold; cursor: pointer;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .month-header::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; }
-        .month-group.collapsed .month-header::after { transform: rotate(-90deg); }
+        .month-label::after { content: '▼'; font-size: 0.8rem; transition: 0.3s; }
+        .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-content { display: block; padding: 15px; }
-        .month-group.collapsed .month-content { display: none; }
+        .month-section.collapsed .month-content { display: none; }
 
-        /* 주차별 카드 (기존 스타일 유지) */
+        /* 주차별 카드 디자인 (흰색 배경 통일) */
         .week-card { 
-            background-color: #ffffff; border-radius: 10px; 
-            overflow: hidden; margin-bottom: 15px; 
-            border: 1px solid #e1e4e8; transition: box-shadow 0.2s;
+            background: #ffffff; border: 1px solid #e1e4e8; 
+            border-radius: 10px; margin-bottom: 15px; overflow: hidden;
         }
-        .week-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .week-header { cursor: pointer; padding: 15px 20px; }
+        .week-card.highlight { border: 2px solid var(--highlight-border); background: var(--highlight-bg); }
+        .week-header { cursor: pointer; padding: 18px 20px; }
+
+        /* 텍스트 레이아웃 및 긴 구절 처리 */
+        .info-row { display: flex; gap: 8px; margin-top: 10px; font-size: 0.95rem; line-height: 1.6; color: #555; }
+        .info-label { white-space: nowrap; color: #999; font-weight: bold; width: 45px; }
+        .info-value { flex: 1; word-break: keep-all; overflow-wrap: break-word; }
+
+        /* 상세 담당자 표 (1/2반 행 분리) */
+        .detail-table { width: 100%; border-collapse: collapse; table-layout: fixed; background: #fff; margin-top: 10px; }
+        .detail-table td { border: 1px solid #f0f0f0; padding: 12px 5px; text-align: center; font-size: 0.9rem; }
+        .role-header { background: #f8f9fa; font-weight: bold; color: #666; font-size: 0.85rem; }
         
-        /* 강조 및 마크 스타일 */
-        .highlight { border: 2px solid #ffc107 !important; background-color: #fffdf5 !important; }
-        mark { background: #fffd54; color: black; font-weight: bold; }
+        /* 유틸리티 스타일 */
+        .praise-link { color: var(--primary-color); text-decoration: none; font-weight: bold; }
+        .praise-link:hover { text-decoration: underline; }
+        mark { background: #fffd54; font-weight: bold; padding: 0 2px; }
 
-        /* 테이블 디자인 */
-        .people-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .people-table td { border: 1px solid #f0f0f0; padding: 10px 5px; text-align: center; font-size: 0.9rem; }
-        .praise-link { color: #4a90e2; text-decoration: none; font-weight: bold; }
-
-        /* 버튼 */
-        button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        /* 버튼 스타일 */
+        button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-green { background: #28a745; color: white; }
         .btn-blue { background: #007bff; color: white; }
         .btn-yellow { background: #ffc107; color: black; }
-        input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 100px; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 110px; }
     </style>
 </head>
 <body>
 
 <div class="controls">
-    <button onclick="toggleExpandAllMonths()" class="btn-green">모든 달 펼치기/접기</button>
-    <input id="search-name" placeholder="이름 입력" type="text" onkeyup="if(window.event.keyCode==13){highlightName()}"/>
-    <button onclick="highlightName()" class="btn-blue">검색</button>
-    <button onclick="showMyFunctions()" class="btn-yellow">내 기능 보기</button>
-    <button onclick="captureVisible()" class="btn-blue">📸 캡처</button>
+    <button onclick="toggleAllMonths()" class="btn-green">모든 달 펼치기/접기</button>
+    <input id="search-name" placeholder="이름 입력" type="text" onkeyup="if(window.event.keyCode==13){searchName()}"/>
+    <button onclick="searchName()" class="btn-blue">검색</button>
+    <button onclick="showMyList()" class="btn-yellow">내 기능 보기</button>
+    <button onclick="exportImage()" class="btn-blue">📸 캡처</button>
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center;">2026 기능 요약표</h1>
-    <p style="text-align:center; color:#6c757d; font-size:0.9rem;">※ 이번 달 일정은 자동으로 펼쳐져 있습니다.</p>
-    <div id="dynamic-content"></div>
+    <h1 style="text-align:center; margin-bottom: 5px;">2025 기능 요약표</h1>
+    <p style="text-align:center; color:#6c757d; margin-bottom: 30px;">※ 이번 주 일요일 일정이 자동으로 강조됩니다.</p>
+    <div id="render-area"></div>
 </div>
 
 <script>
-let globalData = [];
-let allMonthsExpanded = false;
+let csvData = [];
+let isAllExpanded = false;
 
 window.onload = function() {
     Papa.parse("data.csv", {
         download: true, header: true, skipEmptyLines: true,
         complete: function(results) {
-            globalData = results.data;
-            renderTableByMonth(globalData);
-            highlightThisWeek();
+            csvData = results.data;
+            renderByMonth(csvData);
+            autoExpandCurrentWeek();
         }
     });
 };
 
-function renderTableByMonth(data) {
-    const container = document.getElementById('dynamic-content');
-    container.innerHTML = "";
+function renderByMonth(data) {
+    const area = document.getElementById('render-area');
+    area.innerHTML = "";
 
-    // 1. 데이터를 월별로 그룹화
-    const months = {};
+    const groups = {};
     data.forEach(row => {
         if (!row.날짜) return;
-        const monthKey = row.날짜.substring(0, 7); // "2025-01"
-        if (!months[monthKey]) months[monthKey] = [];
-        months[monthKey].push(row);
+        const month = row.날짜.substring(0, 7); // "YYYY-MM" 추출
+        if (!groups[month]) groups[month] = [];
+        groups[month].push(row);
     });
 
-    // 2. 현재 달 확인
-    const todayStr = new Date().toISOString().substring(0, 7);
-
-    // 3. 월별 렌더링
-    Object.keys(months).sort().forEach(monthKey => {
-        const monthGroup = document.createElement('div');
-        monthGroup.className = "month-group";
-        monthGroup.id = `month-${monthKey}`;
+    Object.keys(groups).sort().forEach(month => {
+        const section = document.createElement('div');
+        section.className = "month-section collapsed"; // 기본 접힘 상태
+        section.id = `sec-${month}`;
         
-        // 이번 달이 아니면 접어두기
-        if (monthKey !== todayStr) monthGroup.classList.add('collapsed');
-
-        const displayMonth = monthKey.replace('-', '년 ') + '월';
-        
+        const monthDisplay = month.replace('-', '년 ') + '월';
         let weeksHtml = "";
-        months[monthKey].forEach(row => {
-            const praiseHTML = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank" class="praise-link">${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
+
+        groups[month].forEach(row => {
+            const link = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank" class="praise-link">${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
             
             weeksHtml += `
-                <div class="week-card" id="week-${row.날짜}">
+                <div class="week-card" id="card-${row.날짜}">
                     <div class="week-header" onclick="toggleWeek('${row.날짜}')">
-                        <span style="color:#4a90e2; font-weight:bold; font-size:0.85rem;">${row.날짜} (일)</span><br/>
-                        <b style="font-size:1.1rem;">${row.과}과: ${row.제목}</b> 
-                        <small style="color:#888;">(${row.말씀 || ''})</small>
-                        <div style="margin-top:10px; font-size:0.9rem; line-height:1.5; color:#555;">
-                            🎵 찬양: ${praiseHTML} <br> 📖 암송: ${row.암송말씀 || '-'}
-                        </div>
+                        <span style="color:var(--primary-color); font-weight:bold; font-size:0.9rem;">${row.날짜} (일)</span><br>
+                        <b style="font-size:1.15rem;">${row.과}과: ${row.제목}</b> 
+                        <span style="color:#888; font-size:0.9rem;">(${row.말씀 || ''})</span>
+                        <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-value">${link}</span></div>
+                        <div class="info-row"><span class="info-label">📖 암송</span><span class="info-value">${row.암송말씀 || '-'}</span></div>
                     </div>
-                    <div class="week-people" id="people-${row.날짜}" style="display:none; padding:0 15px 15px;">
-                        <table class="people-table">
-                            <tr style="background:#f8f9fa; font-size:0.8rem; font-weight:bold;">
-                                <td style="width:45px;">구분</td><td>🎹반주</td><td>🎤찬양</td><td>💃찬율</td><td>🗣️암송</td><td>👐손유희</td>
+                    <div class="week-detail" id="det-${row.날짜}" style="display:none; padding: 0 20px 20px;">
+                        <table class="detail-table">
+                            <tr class="role-header">
+                                <td style="width:50px;">구분</td><td>🎹반주</td><td>🎤찬양</td><td>💃찬율</td><td>🗣️암송</td><td>👐손유희</td>
                             </tr>
                             <tr>
                                 <td style="color:#28a745; font-weight:bold;">1반</td>
@@ -150,92 +143,85 @@ function renderTableByMonth(data) {
                 </div>`;
         });
 
-        monthGroup.innerHTML = `
-            <div class="month-header" onclick="toggleMonth('${monthKey}')">${displayMonth}</div>
+        section.innerHTML = `
+            <div class="month-label" onclick="toggleMonth('${month}')">${monthDisplay}</div>
             <div class="month-content">${weeksHtml}</div>`;
-        container.appendChild(monthGroup);
+        area.appendChild(section);
     });
 }
 
-function toggleMonth(monthKey) {
-    const el = document.getElementById(`month-${monthKey}`);
-    el.classList.toggle('collapsed');
-}
+// 자동 펼침: 이번 주 일요일 및 해당 월
+function autoExpandCurrentWeek() {
+    const now = new Date();
+    const day = now.getDay();
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() + (day === 0 ? 0 : 7 - day));
+    const sunStr = sunday.toISOString().substring(0, 10);
+    const mStr = sunStr.substring(0, 7);
 
-function toggleWeek(date) {
-    const el = document.getElementById(`people-${date}`);
-    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
-}
+    // 해당 월 섹션 펼치기
+    const mSec = document.getElementById(`sec-${mStr}`);
+    if (mSec) mSec.classList.remove('collapsed');
 
-function toggleExpandAllMonths() {
-    allMonthsExpanded = !allMonthsExpanded;
-    document.querySelectorAll('.month-group').forEach(group => {
-        if (allMonthsExpanded) group.classList.remove('collapsed');
-        else group.classList.add('collapsed');
-    });
-}
-
-function highlightThisWeek() {
-    const today = new Date();
-    const day = today.getDay();
-    let target = new Date();
-    target.setDate(today.getDate() + ((7 - day) % 7));
-    const targetStr = target.toISOString().substring(0, 10);
-    const monthStr = targetStr.substring(0, 7);
-
-    // 1. 해당 월 펼치기
-    const monthEl = document.getElementById(`month-${monthStr}`);
-    if (monthEl) monthEl.classList.remove('collapsed');
-
-    // 2. 해당 주차 강조 및 펼치기
-    const weekEl = document.getElementById(`week-${targetStr}`);
-    const peopleEl = document.getElementById(`people-${targetStr}`);
-    if (weekEl && peopleEl) {
-        weekEl.classList.add('highlight');
-        peopleEl.style.display = 'block';
-        weekEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 해당 주차 카드 강조 및 펼치기
+    const card = document.getElementById(`card-${sunStr}`);
+    if (card) {
+        card.classList.add('highlight');
+        toggleWeek(sunStr); // 상세 표 펼치기
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
-function highlightName() {
-    const name = document.getElementById("search-name").value.trim();
+function toggleMonth(m) { document.getElementById(`sec-${m}`).classList.toggle('collapsed'); }
+function toggleWeek(d) { 
+    const el = document.getElementById(`det-${d}`);
+    el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function toggleAllMonths() {
+    isAllExpanded = !isAllExpanded;
+    document.querySelectorAll('.month-section').forEach(s => {
+        if (isAllExpanded) s.classList.remove('collapsed');
+        else s.classList.add('collapsed');
+    });
+}
+
+function searchName() {
+    const name = document.getElementById('search-name').value.trim();
     if (!name) return;
     document.querySelectorAll('.role-cell').forEach(td => {
         td.innerHTML = td.innerHTML.replace(/<mark>|<\/mark>/g, '');
         if (td.innerText.includes(name)) {
             td.innerHTML = `<mark>${name}</mark>`;
-            const weekCard = td.closest('.week-card');
-            const monthGroup = td.closest('.month-group');
-            weekCard.querySelector('.week-people').style.display = 'block';
-            monthGroup.classList.remove('collapsed');
+            td.closest('.week-detail').style.display = 'block';
+            td.closest('.month-section').classList.remove('collapsed');
         }
     });
 }
 
-function showMyFunctions() {
-    const name = document.getElementById("search-name").value.trim();
+function showMyList() {
+    const name = document.getElementById('search-name').value.trim();
     if (!name) { alert("이름을 입력하세요."); return; }
-    let results = [];
-    globalData.forEach(row => {
+    let res = [];
+    csvData.forEach(row => {
         ["반주","찬양","찬율","암송","손유희"].forEach(role => {
-            if (row[role+"1"]?.includes(name)) results.push({d:row.날짜, t:row.제목, r:`1반 ${role}`});
-            if (row[role+"2"]?.includes(name)) results.push({d:row.날짜, t:row.제목, r:`2반 ${role}`});
+            if (row[role+"1"]?.includes(name)) res.push({d:row.날짜, t:row.제목, r:`1반 ${role}`});
+            if (row[role+"2"]?.includes(name)) res.push({d:row.날짜, t:row.제목, r:`2반 ${role}`});
         });
     });
-    if (results.length === 0) { alert("내역이 없습니다."); return; }
-    let html = `<h3>[${name}] 담당 내역</h3><table border="1" style="width:100%; border-collapse:collapse; text-align:center;">
-                <tr style="background:#eee"><th>날짜</th><th>주제</th><th>기능</th></tr>`;
-    results.forEach(r => html += `<tr><td>${r.d}</td><td>${r.t}</td><td>${r.r}</td></tr>`);
-    const win = window.open("", "_blank", "width=500,height=400");
-    win.document.write(html + "</table>");
+    if (res.length === 0) { alert("담당 내역이 없습니다."); return; }
+    let html = `<h3 style="margin-bottom:10px;">[${name}] 담당 내역</h3><table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:0.9rem;">
+                <tr style="background:#f4f4f4"><th>날짜</th><th>주제</th><th>기능</th></tr>`;
+    res.forEach(r => html += `<tr><td style="padding:8px">${r.d}</td><td>${r.t}</td><td>${r.r}</td></tr>`);
+    window.open("", "_blank", "width=500,height=450,scrollbars=yes").document.write(`<html><body>${html}</table></body></html>`);
 }
 
-function captureVisible() {
-    html2canvas(document.getElementById('table-container'), {scale:2}).then(canvas => {
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL();
-        a.download = '기능일정.png';
-        a.click();
+function exportImage() {
+    html2canvas(document.getElementById('table-container'), {scale:2, backgroundColor:'#f0f2f5'}).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = '2025_기능일정.png';
+        link.click();
     });
 }
 </script>
