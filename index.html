@@ -75,32 +75,47 @@ function renderTable(data) {
         const tbody = document.createElement('tbody');
         tbody.className = "group";
         
-        const praiseHTML = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank">🔗 ${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
+        const praiseHTML = row.찬양LINK ? `<a href="${row.찬양LINK}" target="_blank" style="text-decoration:none;">🔗 ${row.찬양곡명}</a>` : (row.찬양곡명 || '-');
 
         tbody.innerHTML = `
             <tr class="header" data-date="${row.날짜}" onclick="toggleRow('${row.날짜}')">
-                <td colspan="6" style="text-align:left; padding:15px 20px;">
-                    <span style="color:#007bff; font-weight:bold;">${row.날짜} (일)</span><br/>
-                    <b style="font-size:1.1rem;">${row.과}과: ${row.제목}</b> 
-                    <small style="color:#666; margin-left:10px;">(${row.말씀 || ''})</small><br/>
-                    <div style="margin-top:5px; color:#555; font-size:0.9rem;">
-                        🎵 찬양: ${praiseHTML} | 📖 암송: ${row.암송말씀 || '-'}
+                <td colspan="6" style="text-align:left; padding:15px 20px; word-break: keep-all; overflow-wrap: break-word;">
+                    <span style="color:#007bff; font-weight:bold; font-size:0.9rem;">${row.날짜} (일)</span><br/>
+                    <b style="font-size:1.15rem;">${row.과}과: ${row.제목}</b> 
+                    <small style="color:#666; margin-left:8px;">(${row.말씀 || ''})</small>
+                    
+                    <div style="margin-top:10px; display: flex; flex-direction: column; gap: 6px; color:#444; font-size:0.95rem; line-height:1.5;">
+                        <div style="display: flex; align-items: flex-start; gap: 5px;">
+                            <span style="white-space: nowrap;">🎵 찬양:</span>
+                            <span>${praiseHTML}</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start; gap: 5px;">
+                            <span style="white-space: nowrap;">📖 암송:</span>
+                            <span style="color:#555;">${row.암송말씀 || '-'}</span>
+                        </div>
                     </div>
                 </td>
             </tr>
             <tr class="people" data-date="${row.날짜}" style="display:none">
                 <td colspan="6" style="padding:0;">
-                    <table style="width:100%; border:none;">
-                        <tr style="background:#f1f1f1; font-size:0.85rem; font-weight:bold;">
+                    <table style="width:100%; border:none; table-layout: fixed;"> <tr style="background:#f1f1f1; font-size:0.85rem; font-weight:bold;">
                             <td style="width:60px;">구분</td><td>🎹 반주</td><td>🎤 찬양</td><td>💃 찬율</td><td>🗣️ 암송</td><td>👐 손유희</td>
                         </tr>
-                        <tr class="class-1">
-                            <td style="font-weight:bold; color:#28a745;">1반</td>
-                            <td class="role-cell">${row.반주1 || ''}</td><td class="role-cell">${row.찬양1 || ''}</td><td class="role-cell">${row.찬율1 || ''}</td><td class="role-cell">${row.암송1 || ''}</td><td class="role-cell">${row.손유희1 || ''}</td>
+                        <tr>
+                            <td style="font-weight:bold; color:#28a745; background:#fafafa;">1반</td>
+                            <td class="role-cell">${row.반주1 || ''}</td>
+                            <td class="role-cell">${row.찬양1 || ''}</td>
+                            <td class="role-cell">${row.찬율1 || ''}</td>
+                            <td class="role-cell">${row.암송1 || ''}</td>
+                            <td class="role-cell">${row.손유희1 || ''}</td>
                         </tr>
-                        <tr class="class-2">
-                            <td style="font-weight:bold; color:#007bff;">2반</td>
-                            <td class="role-cell">${row.반주2 || ''}</td><td class="role-cell">${row.찬양2 || ''}</td><td class="role-cell">${row.찬율2 || ''}</td><td class="role-cell">${row.암송2 || ''}</td><td class="role-cell">${row.손유희2 || ''}</td>
+                        <tr style="border-top: 1px solid #eee;">
+                            <td style="font-weight:bold; color:#007bff; background:#fafafa;">2반</td>
+                            <td class="role-cell">${row.반주2 || ''}</td>
+                            <td class="role-cell">${row.찬양2 || ''}</td>
+                            <td class="role-cell">${row.찬율2 || ''}</td>
+                            <td class="role-cell">${row.암송2 || ''}</td>
+                            <td class="role-cell">${row.손유희2 || ''}</td>
                         </tr>
                     </table>
                 </td>
@@ -215,3 +230,4 @@ function captureVisible() {
 </body>
 
 </html>
+
