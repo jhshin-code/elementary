@@ -11,39 +11,42 @@
         body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
         #table-container { max-width: 1000px; margin: 90px auto 40px; }
 
-        /* 버튼 및 상단 컨트롤 */
+        /* 컨트롤 영역 */
         .controls { position: fixed; top: 0; left: 0; right: 0; background: #fff; padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); z-index: 1000; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        button { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        button { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
         .btn-green { background: #28a745; color: #fff; }
         .btn-blue { background: #007bff; color: #fff; }
         .btn-yellow { background: #ffc107; }
         input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 110px; }
 
-        /* 월별 그룹 디자인 */
+        /* 월별 섹션 */
         .month-section { background: #fff; margin-bottom: 25px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
         .month-label { background: var(--primary); color: #fff; padding: 15px 25px; font-size: 1.15rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .month-label::after { content: '▼'; transition: .3s; }
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        /* 주차별 카드 디자인 */
+        /* 주차별 카드 */
         .week-card { border: 1px solid #e1e4e8; border-radius: 10px; margin: 15px; background: #fff; }
         .week-card.highlight { border: 2px solid var(--highlight-border) !important; background: var(--highlight-bg) !important; }
         .week-header { padding: 18px 20px; cursor: pointer; }
-        .info-row { display: flex; gap: 8px; margin-top: 8px; font-size: .95rem; line-height: 1.4; align-items: flex-start; }
-        /* 암송 행 맞춤을 위해 너비 상향 조정 */
-        .info-label { width: 65px; color: #999; font-weight: bold; flex-shrink: 0; white-space: nowrap; }
-        .info-content { flex-grow: 1; }
-        .link-icon { text-decoration: none; margin-left: 5px; font-size: 1rem; }
+        
+        /* 암송 정렬 관련 수정 */
+        .info-row { display: flex; gap: 10px; margin-top: 8px; font-size: .95rem; line-height: 1.5; align-items: flex-start; }
+        .info-label { width: 68px; color: #888; font-weight: bold; flex-shrink: 0; white-space: nowrap; }
+        .info-content { flex-grow: 1; word-break: keep-all; }
+        .link-icon { text-decoration: none; margin-left: 5px; }
 
-        /* 상세 담당자 표 */
+        /* 상세 테이블 */
         .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .detail-table td { border: 1px solid #f0f0f0; padding: 10px 2px; text-align: center; font-size: 0.85rem; word-break: keep-all; }
+        .detail-table td { border: 1px solid #f0f0f0; padding: 12px 2px; text-align: center; font-size: 0.85rem; }
         .role-header { background: #f8f9fa; font-weight: bold; font-size: .8rem; color: #666; }
         .ban-1 { color: #28a745; font-weight: bold; }
         .ban-2 { color: #007bff; font-weight: bold; }
 
-        mark { background: #fffd54; font-weight: bold; }
+        mark { background: #fffd54; font-weight: bold; padding: 0 2px; }
+        #error-msg { color: red; text-align: center; padding: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -58,39 +61,45 @@
 
 <div id="table-container">
     <h1 style="text-align:center;">2026 기능 요약표</h1>
-    <p style="text-align:center;color:#6c757d;">※ 이번 주 일요일이 자동으로 강조됩니다.</p>
+    <p style="text-align:center;color:#6c757d;">※ 다음 주 일요일이 자동으로 강조됩니다.</p>
+    <div id="error-msg">데이터(data.csv)를 불러오지 못했습니다. 파일명을 확인해주세요.</div>
     <div id="render-area"></div>
 </div>
 
 <script>
 let csvData = [];
 let isAllExpanded = false;
-const CURRENT_YEAR = 2026; 
+const CURRENT_YEAR = 2026;
 
+// 날짜 파싱 (1/4 또는 2026-01-04 대응)
 function parseDate(str) {
     if (!str) return null;
     let y = CURRENT_YEAR, m, d;
-    if (str.includes('/')) {
-        const p = str.split('/');
-        m = parseInt(p[0]); d = parseInt(p[1]);
-    } else if (str.includes('-')) {
-        const p = str.split('-');
-        if (p.length === 3) { y = parseInt(p[0]); m = parseInt(p[1]); d = parseInt(p[2]); }
-        else { m = parseInt(p[0]); d = parseInt(p[1]); }
-    }
+    const p = str.includes('/') ? str.split('/') : str.split('-');
+    if (p.length === 3) { y = parseInt(p[0]); m = parseInt(p[1]); d = parseInt(p[2]); }
+    else { m = parseInt(p[0]); d = parseInt(p[1]); }
     return new Date(y, m - 1, d);
 }
 
 window.onload = () => {
-    Papa.parse("data.csv", {
+    // data.csv 파일을 불러옵니다. (캐시 방지를 위해 쿼리스트링 추가)
+    Papa.parse("data.csv?v=" + new Date().getTime(), {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: res => {
             csvData = res.data.filter(r => r.날짜);
+            if (csvData.length === 0) {
+                document.getElementById('error-msg').style.display = 'block';
+                return;
+            }
             csvData.sort((a, b) => parseDate(a.날짜) - parseDate(b.날짜));
             renderByMonth(csvData);
             autoExpandCurrent();
+        },
+        error: err => {
+            console.error(err);
+            document.getElementById('error-msg').style.display = 'block';
         }
     });
 };
@@ -102,6 +111,7 @@ function renderByMonth(data) {
 
     data.forEach(r => {
         const d = parseDate(r.날짜);
+        if(!d) return;
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         if (!groups[key]) groups[key] = [];
         groups[key].push(r);
@@ -115,9 +125,7 @@ function renderByMonth(data) {
 
         let weeksHtml = "";
         groups[key].forEach(r => {
-            // 찬양 링크 아이콘 처리
             const linkTag = r.찬양링크 ? `<a href="${r.찬양링크}" target="_blank" class="link-icon">🔗</a>` : "";
-            
             weeksHtml += `
             <div class="week-card" id="card-${r.날짜.replace(/\//g, '-')}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
@@ -165,26 +173,27 @@ function renderByMonth(data) {
 
 function autoExpandCurrent() {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const nextSunday = new Date(now);
+    // 다음 주 일요일 계산
+    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 + 7);
     
+    const y = nextSunday.getFullYear();
+    const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
     const curMonthKey = `${y}-${m}`;
+    
     const sec = document.getElementById(`sec-${curMonthKey}`);
     if (sec) sec.classList.remove('collapsed');
 
-    const sunday = new Date(now);
-    sunday.setDate(now.getDate() + (7 - now.getDay()) % 7 +7);
-    
-    const targetDateStr = `${sunday.getMonth() + 1}-${sunday.getDate()}`;
-    const targetDateStrAlt = `${sunday.getMonth() + 1}/${sunday.getDate()}`;
-    
+    const targetDateStr = `${nextSunday.getMonth() + 1}-${nextSunday.getDate()}`;
+    const targetDateStrAlt = `${nextSunday.getMonth() + 1}/${nextSunday.getDate()}`;
     const card = document.getElementById(`card-${targetDateStr}`) || document.getElementById(`card-${targetDateStrAlt.replace(/\//g, '-')}`);
+    
     if (card) {
         card.classList.add('highlight');
         const detId = card.id.replace('card-', 'det-');
         const det = document.getElementById(detId);
         if (det) det.style.display = 'block';
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
     }
 }
 
@@ -198,7 +207,6 @@ function toggleAllMonths() {
     isAllExpanded = !isAllExpanded;
     document.querySelectorAll('.month-section').forEach(s => s.classList.toggle('collapsed', !isAllExpanded));
 }
-
 function searchName() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) return;
@@ -216,7 +224,6 @@ function searchName() {
         }
     });
 }
-
 function showMyList() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) { alert("이름을 입력하세요"); return; }
@@ -224,7 +231,6 @@ function showMyList() {
                       .map(r => `${r.날짜} (${r.제목})`);
     alert(list.length > 0 ? `[${name}] 님 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
 }
-
 function exportImage() {
     html2canvas(document.getElementById('table-container'), { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
@@ -236,4 +242,3 @@ function exportImage() {
 </script>
 </body>
 </html>
-
