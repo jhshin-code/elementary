@@ -190,7 +190,7 @@ const CURRENT_YEAR = 2026;
 function linkify(text) {
     if (!text || text.trim() === "") return "";
     const urlPattern = /(https?:\/\/[^\s]+)/g;
-    return text.toString().replace(urlPattern, '<a href="$1" target="_blank" class="link-text"> 🔗링크</a>');
+    return text.toString().replace(urlPattern, '<a href="$1" target="_blank" class="link-text"> 🔗Link</a>');
 }
 
 function parseDate(str) {
@@ -340,3 +340,4 @@ function exportImage() {
 
 </body>
 </html>
+
