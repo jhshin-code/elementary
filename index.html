@@ -18,8 +18,9 @@
         body {
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
             background: #f0f2f5;
-            padding: 20px;
+            padding: 15px;
             margin: 0;
+            letter-spacing: -0.5px; /* 글자 간격을 좁혀 공간 확보 */
         }
 
         #table-container {
@@ -27,26 +28,27 @@
             margin: 90px auto 40px;
         }
 
-        /* 상단 고정 컨트롤 */
+        /* 상단 컨트롤 */
         .controls {
             position: fixed;
             top: 0; left: 0; right: 0;
             background: #fff;
-            padding: 12px 20px;
+            padding: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,.1);
             z-index: 1000;
             display: flex;
-            gap: 8px;
+            gap: 5px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         button {
-            padding: 8px 15px;
+            padding: 8px 10px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 0.85rem;
         }
 
         .btn-green { background: #28a745; color: #fff; }
@@ -57,13 +59,13 @@
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            width: 110px;
+            width: 90px;
         }
 
-        /* 월 섹션 (아코디언) */
+        /* 월별 섹션 */
         .month-section {
             background: #fff;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,.05);
@@ -72,8 +74,8 @@
         .month-label {
             background: var(--primary);
             color: #fff;
-            padding: 15px 25px;
-            font-size: 1.15rem;
+            padding: 15px 20px;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -85,121 +87,92 @@
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        /* 주차별 카드 */
+        /* 주차 카드 */
         .week-card {
             border: 1px solid #e1e4e8;
             border-radius: 10px;
-            margin: 15px;
+            margin: 10px;
             background: #fff;
-            transition: all 0.3s;
         }
 
-        /* 이번 주 하이라이트 */
         .week-card.highlight {
             border: 3px solid var(--highlight-border);
             background: var(--highlight-bg);
-            box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
         }
 
-        .week-header {
-            padding: 18px 20px;
-            cursor: pointer;
-        }
-
-        .week-title {
-            font-size: 1.15rem;
-            font-weight: bold;
-        }
-
-        .title-verse {
-            font-size: 0.85rem;
-            color: #6c757d;
-            font-weight: 500;
-            margin-left: 4px;
-        }
+        .week-header { padding: 15px; cursor: pointer; }
+        .week-title { font-size: 1.05rem; font-weight: bold; }
+        .title-verse { font-size: 0.85rem; color: #6c757d; margin-left: 3px; }
 
         .info-row {
             display: flex;
-            gap: 10px;
-            margin-top: 8px;
-            font-size: 1rem;
-            line-height: 1.5;
+            gap: 8px;
+            margin-top: 6px;
+            font-size: 0.95rem;
         }
 
-        .info-label {
-            width: 75px;
-            color: #888;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
+        .info-label { width: 60px; color: #888; font-weight: bold; flex-shrink: 0; }
+        .info-content { flex-grow: 1; font-weight: 500; }
 
-        .info-content {
-            flex-grow: 1;
-            font-weight: 500;
-            word-break: keep-all;
-        }
-
-        /* 모바일 대응: 테이블 가로 스크롤 및 줄바꿈 방지 */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-top: 10px;
-            border-radius: 8px;
-        }
-
+        /* ★ 테이블 최적화 ★ */
         .detail-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto;
-            min-width: 550px; /* 테이블 최소 너비 확보 */
+            table-layout: auto; /* 내용에 맞게 너비 조절 */
+            margin-top: 10px;
         }
 
         .detail-table td {
-            border: 1px solid #f0f0f0;
-            padding: 14px 8px;
+            border: 1px solid #eee;
+            padding: 12px 2px;
             text-align: center;
-            white-space: nowrap; /* 글자 줄바꿈 방지 */
+            font-size: 0.9rem;
+            white-space: nowrap; /* 줄바꿈 절대 방지 */
         }
 
-        .role-header {
+        .role-header td {
             background: #f8f9fa;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: #555;
+            padding: 10px 1px;
         }
 
-        .role-cell {
-            font-size: 1rem;
-            font-weight: 700;
-            background: #fafafa;
+        .role-cell { font-weight: 700; background: #fafafa; }
+        
+        .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; width: 40px; }
+        .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; width: 40px; }
+
+        /* 모바일 대응 (화면 폭 480px 이하) */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            #table-container { margin-top: 100px; }
+            .detail-table td { 
+                font-size: 0.72rem; /* 글자 크기를 더 줄여서 이모지 포함 한 줄 유지 */
+                padding: 10px 0px; 
+            }
+            .role-header td { font-size: 0.65rem; }
+            .week-header { padding: 12px; }
+            .week-title { font-size: 0.95rem; }
+            .info-row { font-size: 0.85rem; }
         }
 
-        .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; }
-        .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; }
-
-        mark {
-            background: #ff5722;
-            color: white;
-            font-weight: bold;
-            padding: 2px 4px;
-            border-radius: 4px;
-        }
+        mark { background: #ff5722; color: white; border-radius: 3px; padding: 0 2px; }
     </style>
 </head>
 
 <body>
 
 <div class="controls">
-    <button class="btn-green" onclick="toggleAllMonths()">모두 펼치기/접기</button>
-    <input id="search-name" placeholder="이름 입력" onkeyup="if(event.keyCode==13)searchName()">
-    <button class="btn-yellow" onclick="showMyList()">내 기능 보기</button>
+    <button class="btn-green" onclick="toggleAllMonths()">모두 펼치기</button>
+    <input id="search-name" placeholder="이름" onkeyup="if(event.keyCode==13)searchName()">
+    <button class="btn-yellow" onclick="showMyList()">내 기능</button>
     <button class="btn-blue" onclick="exportImage()">📸 캡처</button>
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center;">2026 초등부 기능</h1>
-    <p style="text-align:center;color:#6c757d;">※ 담당 기능 불가 시 미리 말씀해주세요</p>
+    <h1 style="text-align:center; font-size:1.4rem; margin-bottom:5px;">2026 초등부 기능</h1>
+    <p style="text-align:center; color:#6c757d; font-size:0.85rem; margin-top:0;">※ 담당 불가 시 미리 말씀해주세요</p>
     <div id="render-area"></div>
 </div>
 
@@ -207,30 +180,23 @@
 let csvData = [];
 const CURRENT_YEAR = 2026;
 
-// 날짜 파싱 함수
 function parseDate(str) {
     if (!str) return null;
     let y = CURRENT_YEAR, m, d;
     const p = str.includes('/') ? str.split('/') : str.split('-');
-    if (p.length === 3) { 
-        y = parseInt(p[0]); m = parseInt(p[1]); d = parseInt(p[2]); 
-    } else { 
-        m = parseInt(p[0]); d = parseInt(p[1]); 
-    }
+    if (p.length === 3) { y = parseInt(p[0]); m = parseInt(p[1]); d = parseInt(p[2]); }
+    else { m = parseInt(p[0]); d = parseInt(p[1]); }
     return new Date(y, m - 1, d);
 }
 
 window.onload = () => {
-    // CSV 데이터 로드 (캐시 방지를 위해 타임스탬프 추가)
     Papa.parse("data.csv?v=" + new Date().getTime(), {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
+        download: true, header: true, skipEmptyLines: true,
         complete: res => {
             csvData = res.data.filter(r => r.날짜);
             csvData.sort((a, b) => parseDate(a.날짜) - parseDate(b.날짜));
             renderByMonth(csvData);
-            autoExpandCurrent(); // 페이지 로드 시 이번 주차 자동 펼치기 실행
+            autoExpandCurrent();
         }
     });
 };
@@ -260,50 +226,42 @@ function renderByMonth(data) {
             weeksHtml += `
             <div class="week-card" id="card-${weekId}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
-                    <b style="color:var(--primary)">${r.날짜} (일)</b><br>
-                    <b class="week-title">
-                        ${r.과}과: ${r.제목}
-                        <span class="title-verse">(${r.말씀 || ''})</span>
-                    </b>
-
-                    <div class="info-row">
-                        <span class="info-label">🎵 찬양</span>
-                        <span class="info-content">${r['찬양 곡명'] || '-'}</span>
-                    </div>
-
-                    <div class="info-row">
-                        <span class="info-label">📖 암송</span>
-                        <span class="info-content">${r.암송말씀 || '-'}</span>
-                    </div>
+                    <b style="color:var(--primary); font-size:0.85rem;">${r.날짜} (일)</b><br>
+                    <b class="week-title">${r.과}과: ${r.제목} <span class="title-verse">(${r.말씀 || ''})</span></b>
+                    <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${r['찬양 곡명'] || '-'}</span></div>
+                    <div class="info-row"><span class="info-label">📖 암송</span><span class="info-content">${r.암송말씀 || '-'}</span></div>
                 </div>
 
-                <div class="week-detail" id="det-${weekId}" style="display:none;padding:0 20px 20px;">
-                    <div class="table-responsive">
-                        <table class="detail-table">
-                            <tr class="role-header">
-                                <td>구분</td><td>📚공과</td><td>🎹반주</td><td>🎤찬양</td>
-                                <td>💃찬율</td><td>📜암송</td><td>🙌손유희</td>
-                            </tr>
-                            <tr>
-                                <td class="ban-1">1반</td>
-                                <td class="role-cell">${r.공과1 || ''}</td>
-                                <td class="role-cell">${r.반주1 || ''}</td>
-                                <td class="role-cell">${r.찬양1 || ''}</td>
-                                <td class="role-cell">${r.찬율1 || ''}</td>
-                                <td class="role-cell">${r.암송1 || ''}</td>
-                                <td class="role-cell">${r.손유희1 || ''}</td>
-                            </tr>
-                            <tr>
-                                <td class="ban-2">2반</td>
-                                <td class="role-cell">${r.공과2 || ''}</td>
-                                <td class="role-cell">${r.반주2 || ''}</td>
-                                <td class="role-cell">${r.찬양2 || ''}</td>
-                                <td class="role-cell">${r.찬율2 || ''}</td>
-                                <td class="role-cell">${r.암송2 || ''}</td>
-                                <td class="role-cell">${r.손유희2 || ''}</td>
-                            </tr>
-                        </table>
-                    </div>
+                <div class="week-detail" id="det-${weekId}" style="display:none; padding:0 8px 15px;">
+                    <table class="detail-table">
+                        <tr class="role-header">
+                            <td style="width:12%">구분</td>
+                            <td style="width:14.5%">📚공과</td>
+                            <td style="width:14.5%">🎹반주</td>
+                            <td style="width:14.5%">🎤찬양</td>
+                            <td style="width:14.5%">💃찬율</td>
+                            <td style="width:14.5%">📜암송</td>
+                            <td style="width:15%">🙌손유희</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-1">1반</td>
+                            <td class="role-cell">${r.공과1 || ''}</td>
+                            <td class="role-cell">${r.반주1 || ''}</td>
+                            <td class="role-cell">${r.찬양1 || ''}</td>
+                            <td class="role-cell">${r.찬율1 || ''}</td>
+                            <td class="role-cell">${r.암송1 || ''}</td>
+                            <td class="role-cell">${r.손유희1 || ''}</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-2">2반</td>
+                            <td class="role-cell">${r.공과2 || ''}</td>
+                            <td class="role-cell">${r.반주2 || ''}</td>
+                            <td class="role-cell">${r.찬양2 || ''}</td>
+                            <td class="role-cell">${r.찬율2 || ''}</td>
+                            <td class="role-cell">${r.암송2 || ''}</td>
+                            <td class="role-cell">${r.손유희2 || ''}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>`;
         });
@@ -316,68 +274,46 @@ function renderByMonth(data) {
     });
 }
 
-// 자동 펼치기 로직
 function autoExpandCurrent() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // 오늘 이후 날짜 중 가장 가까운 주일 찾기
-    const currentEntry = csvData.find(r => {
-        const d = parseDate(r.날짜);
-        return d && d >= today;
-    }) || csvData[0];
+    const currentEntry = csvData.find(r => parseDate(r.날짜) >= today) || csvData[0];
 
     if (currentEntry) {
         const d = parseDate(currentEntry.날짜);
         const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const weekId = currentEntry.날짜.replace(/\//g, '-');
 
-        // 월 섹션 펼치기
-        const monthSec = document.getElementById(`sec-${monthKey}`);
-        if (monthSec) monthSec.classList.remove('collapsed');
-
-        // 상세 내용 펼치기
-        const weekDet = document.getElementById(`det-${weekId}`);
-        if (weekDet) weekDet.style.display = 'block';
-
-        // 강조 테두리 및 스크롤 이동
-        const weekCard = document.getElementById(`card-${weekId}`);
-        if (weekCard) {
-            weekCard.classList.add('highlight');
-            setTimeout(() => {
-                weekCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 600);
+        document.getElementById(`sec-${monthKey}`)?.classList.remove('collapsed');
+        const det = document.getElementById(`det-${weekId}`);
+        if(det) det.style.display = 'block';
+        const card = document.getElementById(`card-${weekId}`);
+        if(card) {
+            card.classList.add('highlight');
+            setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
         }
     }
 }
 
-function toggleMonth(m) {
-    document.getElementById(`sec-${m}`).classList.toggle('collapsed');
-}
-
+function toggleMonth(m) { document.getElementById(`sec-${m}`).classList.toggle('collapsed'); }
 function toggleWeek(d) {
-    const id = d.replace(/\//g, '-');
-    const el = document.getElementById(`det-${id}`);
+    const el = document.getElementById(`det-${d.replace(/\//g, '-')}`);
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
-
 function toggleAllMonths() {
-    const sections = document.querySelectorAll('.month-section');
-    const isAnyCollapsed = Array.from(sections).some(s => s.classList.contains('collapsed'));
-    sections.forEach(s => {
-        if (isAnyCollapsed) s.classList.remove('collapsed');
-        else s.classList.add('collapsed');
-    });
+    const secs = document.querySelectorAll('.month-section');
+    const isColl = Array.from(secs).some(s => s.classList.contains('collapsed'));
+    secs.forEach(s => isColl ? s.classList.remove('collapsed') : s.classList.add('collapsed'));
 }
 
 function searchName() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) return;
     document.querySelectorAll('.role-cell').forEach(td => {
-        const originalText = td.innerText;
-        td.innerHTML = originalText;
-        if (originalText.includes(name)) {
-            td.innerHTML = originalText.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
+        const txt = td.innerText;
+        td.innerHTML = txt;
+        if (txt.includes(name)) {
+            td.innerHTML = txt.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
             td.closest('.week-detail').style.display = 'block';
             td.closest('.month-section').classList.remove('collapsed');
         }
@@ -387,22 +323,15 @@ function searchName() {
 function showMyList() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) return alert("이름을 입력하세요");
-    const list = csvData
-        .filter(r => Object.values(r).some(v => v.toString().includes(name)))
-        .map(r => `${r.날짜} (${r.제목})`);
-    alert(list.length ? `[${name}] 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
+    const list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name))).map(r => `${r.날짜} (${r.제목})`);
+    alert(list.length ? `[${name}] 담당:\n` + list.join('\n') : "내역 없음");
 }
 
 function exportImage() {
-    const area = document.getElementById('table-container');
-    html2canvas(area, { 
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#f0f2f5"
-    }).then(canvas => {
+    html2canvas(document.getElementById('table-container'), { scale: 2, backgroundColor: "#f0f2f5" }).then(canvas => {
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `2026_초등부_기능_${new Date().getTime()}.png`;
+        link.href = canvas.toDataURL();
+        link.download = '초등부기능.png';
         link.click();
     });
 }
