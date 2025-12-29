@@ -129,4 +129,120 @@ function renderByMonth(data) {
             <div class="week-card" id="card-${r.날짜.replace(/\//g, '-')}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
                     <b style="color:var(--primary)">${r.날짜} (일)</b><br>
-                    <b style="font-
+                    <b style="font-size:1.1rem;">${r.과}과: ${r.제목} (${r.말씀 || ''})</b>
+                    <div class="info-row">
+                        <span class="info-label">🎵 찬양</span>
+                        <span class="info-content">${songName}${linkTag}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📖 암송</span>
+                        <span class="info-content">${r.암송말씀 || '-'}</span>
+                    </div>
+                </div>
+                <div class="week-detail" id="det-${r.날짜.replace(/\//g, '-')}" style="display:none;padding:0 20px 20px;">
+                    <table class="detail-table">
+                        <tr class="role-header">
+                            <td style="width:10%">구분</td>
+                            <td>📚공과</td>
+                            <td>🎹반주</td>
+                            <td>🎤찬양</td>
+                            <td>💃찬율</td>
+                            <td>📜암송</td>
+                            <td>🙌손유희</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-1">1반</td>
+                            <td class="role-cell">${r.공과1 || ''}</td>
+                            <td class="role-cell">${r.반주1 || ''}</td>
+                            <td class="role-cell">${r.찬양1 || ''}</td>
+                            <td class="role-cell">${r.찬율1 || ''}</td>
+                            <td class="role-cell">${r.암송1 || ''}</td>
+                            <td class="role-cell">${r.손유희1 || ''}</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-2">2반</td>
+                            <td class="role-cell">${r.공과2 || ''}</td>
+                            <td class="role-cell">${r.반주2 || ''}</td>
+                            <td class="role-cell">${r.찬양2 || ''}</td>
+                            <td class="role-cell">${r.찬율2 || ''}</td>
+                            <td class="role-cell">${r.암송2 || ''}</td>
+                            <td class="role-cell">${r.손유희2 || ''}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>`;
+        });
+
+        sec.innerHTML = `<div class="month-label" onclick="toggleMonth('${key}')">${y}년 ${parseInt(m)}월</div>
+                         <div class="month-content">${weeksHtml}</div>`;
+        area.appendChild(sec);
+    });
+}
+
+function autoExpandCurrent() {
+    const now = new Date();
+    const nextSunday = new Date(now);
+    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 + 7);
+    
+    const y = nextSunday.getFullYear();
+    const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
+    const curMonthKey = `${y}-${m}`;
+    const sec = document.getElementById(`sec-${curMonthKey}`);
+    if (sec) sec.classList.remove('collapsed');
+
+    const targetDateStr = `${nextSunday.getMonth() + 1}-${nextSunday.getDate()}`;
+    const targetDateStrAlt = `${nextSunday.getMonth() + 1}/${nextSunday.getDate()}`;
+    const card = document.getElementById(`card-${targetDateStr}`) || document.getElementById(`card-${targetDateStrAlt.replace(/\//g, '-')}`);
+    
+    if (card) {
+        card.classList.add('highlight');
+        const detId = card.id.replace('card-', 'det-');
+        const det = document.getElementById(detId);
+        if (det) det.style.display = 'block';
+        setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
+    }
+}
+
+function toggleMonth(m) { document.getElementById(`sec-${m}`).classList.toggle('collapsed'); }
+function toggleWeek(d) {
+    const id = d.replace(/\//g, '-');
+    const el = document.getElementById(`det-${id}`);
+    if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+}
+function toggleAllMonths() {
+    const sections = document.querySelectorAll('.month-section');
+    const anyExpanded = Array.from(sections).some(s => !s.classList.contains('collapsed'));
+    sections.forEach(s => s.classList.toggle('collapsed', anyExpanded));
+}
+function searchName() {
+    const name = document.getElementById('search-name').value.trim();
+    if (!name) return;
+    document.querySelectorAll('.role-cell').forEach(td => {
+        td.innerHTML = td.innerText;
+        if (td.innerText.includes(name)) {
+            td.innerHTML = `<mark>${name}</mark>`;
+            const card = td.closest('.week-card');
+            const sec = td.closest('.month-section');
+            if (card) { card.querySelector('.week-detail').style.display = 'block'; }
+            if (sec) sec.classList.remove('collapsed');
+        }
+    });
+}
+function showMyList() {
+    const name = document.getElementById('search-name').value.trim();
+    if (!name) { alert("이름을 입력하세요"); return; }
+    let list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name)))
+                      .map(r => `${r.날짜} (${r.제목})`);
+    alert(list.length > 0 ? `[${name}] 님 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
+}
+function exportImage() {
+    html2canvas(document.getElementById('table-container'), { scale: 2 }).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = '2026_기능일정.png';
+        link.click();
+    });
+}
+</script>
+</body>
+</html>
