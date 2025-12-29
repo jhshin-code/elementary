@@ -30,13 +30,16 @@
         .week-card { border: 1px solid #e1e4e8; border-radius: 10px; margin: 15px; background: #fff; }
         .week-card.highlight { border: 2px solid var(--highlight-border) !important; background: var(--highlight-bg) !important; }
         .week-header { padding: 18px 20px; cursor: pointer; }
-        .info-row { display: flex; gap: 8px; margin-top: 8px; font-size: .95rem; line-height: 1.4; }
-        .info-label { width: 45px; color: #999; font-weight: bold; flex-shrink: 0; }
+        .info-row { display: flex; gap: 8px; margin-top: 8px; font-size: .95rem; line-height: 1.4; align-items: flex-start; }
+        /* 암송 행 맞춤을 위해 너비 상향 조정 */
+        .info-label { width: 65px; color: #999; font-weight: bold; flex-shrink: 0; white-space: nowrap; }
+        .info-content { flex-grow: 1; }
+        .link-icon { text-decoration: none; margin-left: 5px; font-size: 1rem; }
 
         /* 상세 담당자 표 */
         .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .detail-table td { border: 1px solid #f0f0f0; padding: 10px 5px; text-align: center; font-size: 0.9rem; }
-        .role-header { background: #f8f9fa; font-weight: bold; font-size: .85rem; color: #666; }
+        .detail-table td { border: 1px solid #f0f0f0; padding: 10px 2px; text-align: center; font-size: 0.85rem; word-break: keep-all; }
+        .role-header { background: #f8f9fa; font-weight: bold; font-size: .8rem; color: #666; }
         .ban-1 { color: #28a745; font-weight: bold; }
         .ban-2 { color: #007bff; font-weight: bold; }
 
@@ -54,17 +57,16 @@
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center;">2025 기능 요약표</h1>
-    <p style="text-align:center;color:#6c757d;">※ 이번 달만 펼쳐지고, 이번 주 일요일이 자동 강조됩니다.</p>
+    <h1 style="text-align:center;">2026 기능 요약표</h1>
+    <p style="text-align:center;color:#6c757d;">※ 이번 주 일요일이 자동으로 강조됩니다.</p>
     <div id="render-area"></div>
 </div>
 
 <script>
 let csvData = [];
 let isAllExpanded = false;
-const CURRENT_YEAR = 2025; // CSV에 연도가 없을 경우 기준 연도
+const CURRENT_YEAR = 2026; 
 
-// 날짜 파싱 유틸리티: 1/4 또는 2025-01-04 모두 대응
 function parseDate(str) {
     if (!str) return null;
     let y = CURRENT_YEAR, m, d;
@@ -86,7 +88,6 @@ window.onload = () => {
         skipEmptyLines: true,
         complete: res => {
             csvData = res.data.filter(r => r.날짜);
-            // 정렬: 날짜 순서대로
             csvData.sort((a, b) => parseDate(a.날짜) - parseDate(b.날짜));
             renderByMonth(csvData);
             autoExpandCurrent();
@@ -114,17 +115,33 @@ function renderByMonth(data) {
 
         let weeksHtml = "";
         groups[key].forEach(r => {
+            // 찬양 링크 아이콘 처리
+            const linkTag = r.찬양링크 ? `<a href="${r.찬양링크}" target="_blank" class="link-icon">🔗</a>` : "";
+            
             weeksHtml += `
             <div class="week-card" id="card-${r.날짜.replace(/\//g, '-')}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
                     <b style="color:var(--primary)">${r.날짜} (일)</b><br>
                     <b style="font-size:1.1rem;">${r.과}과: ${r.제목}</b>
-                    <div class="info-row"><span class="info-label">🎵 찬양</span><span>${r.찬양곡명 || '-'}</span></div>
-                    <div class="info-row"><span class="info-label">📖 암송</span><span>${r.암송말씀 || '-'}</span></div>
+                    <div class="info-row">
+                        <span class="info-label">🎵 찬양</span>
+                        <span class="info-content">${r.찬양곡명 || '-'}${linkTag}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">📖 암송</span>
+                        <span class="info-content">${r.암송말씀 || '-'}</span>
+                    </div>
                 </div>
                 <div class="week-detail" id="det-${r.날짜.replace(/\//g, '-')}" style="display:none;padding:0 20px 20px;">
                     <table class="detail-table">
-                        <tr class="role-header"><td>구분</td><td>반주</td><td>찬양</td><td>찬율</td><td>암송</td><td>손유희</td></tr>
+                        <tr class="role-header">
+                            <td style="width:12%">구분</td>
+                            <td>🎹반주</td>
+                            <td>🎤찬양</td>
+                            <td>💃찬율</td>
+                            <td>📜암송</td>
+                            <td>🙌손유희</td>
+                        </tr>
                         <tr>
                             <td class="ban-1">1반</td>
                             <td class="role-cell">${r.반주1 || ''}</td><td class="role-cell">${r.찬양1 || ''}</td>
@@ -147,20 +164,17 @@ function renderByMonth(data) {
 }
 
 function autoExpandCurrent() {
-    const now = new Date(); // 오늘: 2025년 12월 28일
+    const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
     
-    // 1. 이번 달 섹션 펼치기
     const curMonthKey = `${y}-${m}`;
     const sec = document.getElementById(`sec-${curMonthKey}`);
     if (sec) sec.classList.remove('collapsed');
 
-    // 2. 가장 가까운 일요일 찾기 (오늘이 일요일이면 오늘)
     const sunday = new Date(now);
     sunday.setDate(now.getDate() + (7 - now.getDay()) % 7);
     
-    // CSV 형식에 맞춰 ID 매칭 (예: 12/28)
     const targetDateStr = `${sunday.getMonth() + 1}-${sunday.getDate()}`;
     const targetDateStrAlt = `${sunday.getMonth() + 1}/${sunday.getDate()}`;
     
@@ -206,7 +220,7 @@ function searchName() {
 function showMyList() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) { alert("이름을 입력하세요"); return; }
-    let list = csvData.filter(r => Object.values(r).some(v => v.includes(name)))
+    let list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name)))
                       .map(r => `${r.날짜} (${r.제목})`);
     alert(list.length > 0 ? `[${name}] 님 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
 }
@@ -215,11 +229,10 @@ function exportImage() {
     html2canvas(document.getElementById('table-container'), { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
         link.href = canvas.toDataURL();
-        link.download = '2025_기능일정.png';
+        link.download = '2026_기능일정.png';
         link.click();
     });
 }
 </script>
 </body>
 </html>
-
