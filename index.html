@@ -170,7 +170,7 @@ function renderByMonth(data) {
 function autoExpandCurrent() {
     const now = new Date();
     const nextSunday = new Date(now);
-    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 + 7);
+    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 );
     const y = nextSunday.getFullYear();
     const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
     const sec = document.getElementById(`sec-${y}-${m}`);
@@ -226,4 +226,5 @@ function exportImage() {
 </script>
 </body>
 </html>
+
 
