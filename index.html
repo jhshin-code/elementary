@@ -28,7 +28,6 @@
             margin: 90px auto 40px;
         }
 
-        /* 상단 컨트롤 영역 */
         .controls {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -53,7 +52,7 @@
 
         .btn-green { background: #28a745; color: #fff; }
         .btn-blue { background: #007bff; color: #fff; }
-        .btn-yellow { background: #ffc107; color: #333; } /* 검색 버튼 */
+        .btn-yellow { background: #ffc107; color: #333; }
 
         input {
             padding: 8px;
@@ -63,7 +62,6 @@
             font-size: 0.9rem;
         }
 
-        /* 월별 섹션 */
         .month-section {
             background: #fff;
             margin-bottom: 20px;
@@ -88,7 +86,6 @@
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        /* 주차별 카드 */
         .week-card {
             border: 1px solid #e1e4e8;
             border-radius: 10px;
@@ -101,7 +98,13 @@
             background: var(--highlight-bg);
         }
 
-        .week-header { padding: 15px; cursor: pointer; }
+        .week-header { 
+            padding: 15px; 
+            cursor: pointer; 
+            transition: background 0.2s;
+        }
+        .week-header:hover { background: #f9f9f9; }
+
         .week-title { font-size: 1.05rem; font-weight: bold; }
         .title-verse { font-size: 0.85rem; color: #6c757d; margin-left: 3px; }
 
@@ -115,7 +118,14 @@
         .info-label { width: 60px; color: #888; font-weight: bold; flex-shrink: 0; }
         .info-content { flex-grow: 1; font-weight: 500; }
 
-        /* 테이블 최적화 (이모지 포함 및 줄바꿈 방지) */
+        /* 링크 스타일 */
+        .link-text {
+            color: #007bff;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
         .detail-table {
             width: 100%;
             border-collapse: collapse;
@@ -128,7 +138,7 @@
             padding: 12px 2px;
             text-align: center;
             font-size: 0.9rem;
-            white-space: nowrap;
+            white-space: nowrap; /* 줄바꿈 방지 */
         }
 
         .role-header td {
@@ -144,15 +154,13 @@
         .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; width: 40px; }
         .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; width: 40px; }
 
-        /* 모바일 대응 */
         @media (max-width: 480px) {
             body { padding: 10px; }
-            #table-container { margin-top: 100px; }
+            #table-container { margin-top: 110px; }
             .detail-table td { font-size: 0.72rem; padding: 10px 0px; }
             .role-header td { font-size: 0.65rem; }
             .week-header { padding: 12px; }
-            .week-title { font-size: 0.95rem; }
-            .info-row { font-size: 0.85rem; }
+            .week-title { font-size: 0.92rem; }
         }
 
         mark { background: #ff5722; color: white; border-radius: 3px; padding: 0 2px; }
@@ -177,6 +185,13 @@
 <script>
 let csvData = [];
 const CURRENT_YEAR = 2026;
+
+// 링크 생성 함수
+function linkify(text) {
+    if (!text || text.trim() === "") return "";
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.toString().replace(urlPattern, '<a href="$1" target="_blank" class="link-text"> 🔗링크</a>');
+}
 
 function parseDate(str) {
     if (!str) return null;
@@ -225,8 +240,8 @@ function renderByMonth(data) {
             <div class="week-card" id="card-${weekId}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
                     <b style="color:var(--primary); font-size:0.85rem;">${r.날짜} (일)</b><br>
-                    <b class="week-title">${r.과}과: ${r.제목} <span class="title-verse">(${r.말씀 || ''})</span></b>
-                    <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${r['찬양 곡명'] || '-'}</span></div>
+                    <b class="week-title">${r.제목 || ''} <span class="title-verse">(${r.말씀 || ''})</span></b>
+                    <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${r['찬양 곡명'] || '-'} ${linkify(r['찬양 LINK'])}</span></div>
                     <div class="info-row"><span class="info-label">📖 암송</span><span class="info-content">${r.암송말씀 || '-'}</span></div>
                 </div>
 
@@ -234,30 +249,21 @@ function renderByMonth(data) {
                     <table class="detail-table">
                         <tr class="role-header">
                             <td style="width:12%">구분</td>
-                            <td style="width:14.5%">📚공과</td>
-                            <td style="width:14.5%">🎹반주</td>
-                            <td style="width:14.5%">🎤찬양</td>
-                            <td style="width:14.5%">💃찬율</td>
-                            <td style="width:14.5%">📜암송</td>
-                            <td style="width:15%">🙌손유희</td>
+                            <td style="width:14.5%">📚공과</td><td style="width:14.5%">🎹반주</td>
+                            <td style="width:14.5%">🎤찬양</td><td style="width:14.5%">💃찬율</td>
+                            <td style="width:14.5%">📜암송</td><td style="width:15%">🙌손유희</td>
                         </tr>
                         <tr>
                             <td class="ban-1">1반</td>
-                            <td class="role-cell" data-role="공과1">${r.공과1 || ''}</td>
-                            <td class="role-cell" data-role="반주1">${r.반주1 || ''}</td>
-                            <td class="role-cell" data-role="찬양1">${r.찬양1 || ''}</td>
-                            <td class="role-cell" data-role="찬율1">${r.찬율1 || ''}</td>
-                            <td class="role-cell" data-role="암송1">${r.암송1 || ''}</td>
-                            <td class="role-cell" data-role="손유희1">${r.손유희1 || ''}</td>
+                            <td class="role-cell">${r.공과1 || ''}</td><td class="role-cell">${r.반주1 || ''}</td>
+                            <td class="role-cell">${r.찬양1 || ''}</td><td class="role-cell">${r.찬율1 || ''}</td>
+                            <td class="role-cell">${r.암송1 || ''}</td><td class="role-cell">${r.손유희1 || ''}</td>
                         </tr>
                         <tr>
                             <td class="ban-2">2반</td>
-                            <td class="role-cell" data-role="공과2">${r.공과2 || ''}</td>
-                            <td class="role-cell" data-role="반주2">${r.반주2 || ''}</td>
-                            <td class="role-cell" data-role="찬양2">${r.찬양2 || ''}</td>
-                            <td class="role-cell" data-role="찬율2">${r.찬율2 || ''}</td>
-                            <td class="role-cell" data-role="암송2">${r.암송2 || ''}</td>
-                            <td class="role-cell" data-role="손유희2">${r.손유희2 || ''}</td>
+                            <td class="role-cell">${r.공과2 || ''}</td><td class="role-cell">${r.반주2 || ''}</td>
+                            <td class="role-cell">${r.찬양2 || ''}</td><td class="role-cell">${r.찬율2 || ''}</td>
+                            <td class="role-cell">${r.암송2 || ''}</td><td class="role-cell">${r.손유희2 || ''}</td>
                         </tr>
                     </table>
                 </div>
@@ -272,65 +278,38 @@ function renderByMonth(data) {
     });
 }
 
-// [검색 기능] 이름 강조 및 자동 펼치기
 function searchName() {
     const name = document.getElementById('search-name').value.trim();
-    if (!name) {
-        alert("검색할 이름을 입력해주세요.");
-        return;
-    }
+    if (!name) return alert("검색할 이름을 입력하세요.");
 
-    let foundCount = 0;
-
-    // 모든 셀 순회하며 강조 처리
     document.querySelectorAll('.role-cell').forEach(td => {
-        // 기존 강조 제거 (원래 이름으로 복구)
-        if (td.querySelector('mark')) {
-            td.innerHTML = td.innerText;
-        }
-
-        const originalName = td.innerText;
-        if (originalName.includes(name)) {
-            // 강조 처리
-            td.innerHTML = originalName.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
-            
-            // 해당 주차 상세 펼치기
-            const detailArea = td.closest('.week-detail');
-            if (detailArea) detailArea.style.display = 'block';
-
-            // 해당 월 섹션 펼치기
-            const monthSec = td.closest('.month-section');
-            if (monthSec) monthSec.classList.remove('collapsed');
-            
-            foundCount++;
+        if (td.querySelector('mark')) td.innerHTML = td.innerText;
+        const txt = td.innerText;
+        if (txt.includes(name)) {
+            td.innerHTML = txt.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
+            td.closest('.week-detail').style.display = 'block';
+            td.closest('.month-section').classList.remove('collapsed');
         }
     });
-
-    if (foundCount === 0) {
-        alert(`'${name}' 담당자를 찾을 수 없습니다.`);
-    } else {
-        // 첫 번째 검색 결과로 부드럽게 스크롤
-        const firstMark = document.querySelector('mark');
-        if (firstMark) {
-            firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
+    
+    const first = document.querySelector('mark');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function autoExpandCurrent() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const currentEntry = csvData.find(r => parseDate(r.날짜) >= today) || csvData[0];
+    const current = csvData.find(r => parseDate(r.날짜) >= today) || csvData[0];
 
-    if (currentEntry) {
-        const d = parseDate(currentEntry.날짜);
-        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        const weekId = currentEntry.날짜.replace(/\//g, '-');
+    if (current) {
+        const d = parseDate(current.날짜);
+        const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const wId = current.날짜.replace(/\//g, '-');
 
-        document.getElementById(`sec-${monthKey}`)?.classList.remove('collapsed');
-        const det = document.getElementById(`det-${weekId}`);
+        document.getElementById(`sec-${mKey}`)?.classList.remove('collapsed');
+        const det = document.getElementById(`det-${wId}`);
         if(det) det.style.display = 'block';
-        const card = document.getElementById(`card-${weekId}`);
+        const card = document.getElementById(`card-${wId}`);
         if(card) {
             card.classList.add('highlight');
             setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
