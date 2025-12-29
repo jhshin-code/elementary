@@ -20,7 +20,7 @@
             background: #f0f2f5;
             padding: 15px;
             margin: 0;
-            letter-spacing: -0.5px; /* 글자 간격을 좁혀 공간 확보 */
+            letter-spacing: -0.5px;
         }
 
         #table-container {
@@ -28,7 +28,7 @@
             margin: 90px auto 40px;
         }
 
-        /* 상단 컨트롤 */
+        /* 상단 컨트롤 영역 */
         .controls {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -43,7 +43,7 @@
         }
 
         button {
-            padding: 8px 10px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
@@ -53,13 +53,14 @@
 
         .btn-green { background: #28a745; color: #fff; }
         .btn-blue { background: #007bff; color: #fff; }
-        .btn-yellow { background: #ffc107; }
+        .btn-yellow { background: #ffc107; color: #333; } /* 검색 버튼 */
 
         input {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            width: 90px;
+            width: 100px;
+            font-size: 0.9rem;
         }
 
         /* 월별 섹션 */
@@ -87,7 +88,7 @@
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        /* 주차 카드 */
+        /* 주차별 카드 */
         .week-card {
             border: 1px solid #e1e4e8;
             border-radius: 10px;
@@ -114,11 +115,11 @@
         .info-label { width: 60px; color: #888; font-weight: bold; flex-shrink: 0; }
         .info-content { flex-grow: 1; font-weight: 500; }
 
-        /* ★ 테이블 최적화 ★ */
+        /* 테이블 최적화 (이모지 포함 및 줄바꿈 방지) */
         .detail-table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto; /* 내용에 맞게 너비 조절 */
+            table-layout: auto;
             margin-top: 10px;
         }
 
@@ -127,7 +128,7 @@
             padding: 12px 2px;
             text-align: center;
             font-size: 0.9rem;
-            white-space: nowrap; /* 줄바꿈 절대 방지 */
+            white-space: nowrap;
         }
 
         .role-header td {
@@ -143,14 +144,11 @@
         .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; width: 40px; }
         .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; width: 40px; }
 
-        /* 모바일 대응 (화면 폭 480px 이하) */
+        /* 모바일 대응 */
         @media (max-width: 480px) {
             body { padding: 10px; }
             #table-container { margin-top: 100px; }
-            .detail-table td { 
-                font-size: 0.72rem; /* 글자 크기를 더 줄여서 이모지 포함 한 줄 유지 */
-                padding: 10px 0px; 
-            }
+            .detail-table td { font-size: 0.72rem; padding: 10px 0px; }
             .role-header td { font-size: 0.65rem; }
             .week-header { padding: 12px; }
             .week-title { font-size: 0.95rem; }
@@ -164,9 +162,9 @@
 <body>
 
 <div class="controls">
-    <button class="btn-green" onclick="toggleAllMonths()">펼치기</button>
-    <input id="search-name" placeholder="이름" onkeyup="if(event.keyCode==13)searchName()">
-    <button class="btn-yellow" onclick="showMyList()">내 기능</button>
+    <button class="btn-green" onclick="toggleAllMonths()">모두 펼치기/접기</button>
+    <input id="search-name" placeholder="이름 입력" onkeyup="if(event.keyCode==13)searchName()">
+    <button class="btn-yellow" onclick="searchName()">검색</button>
     <button class="btn-blue" onclick="exportImage()">📸 캡처</button>
 </div>
 
@@ -245,21 +243,21 @@ function renderByMonth(data) {
                         </tr>
                         <tr>
                             <td class="ban-1">1반</td>
-                            <td class="role-cell">${r.공과1 || ''}</td>
-                            <td class="role-cell">${r.반주1 || ''}</td>
-                            <td class="role-cell">${r.찬양1 || ''}</td>
-                            <td class="role-cell">${r.찬율1 || ''}</td>
-                            <td class="role-cell">${r.암송1 || ''}</td>
-                            <td class="role-cell">${r.손유희1 || ''}</td>
+                            <td class="role-cell" data-role="공과1">${r.공과1 || ''}</td>
+                            <td class="role-cell" data-role="반주1">${r.반주1 || ''}</td>
+                            <td class="role-cell" data-role="찬양1">${r.찬양1 || ''}</td>
+                            <td class="role-cell" data-role="찬율1">${r.찬율1 || ''}</td>
+                            <td class="role-cell" data-role="암송1">${r.암송1 || ''}</td>
+                            <td class="role-cell" data-role="손유희1">${r.손유희1 || ''}</td>
                         </tr>
                         <tr>
                             <td class="ban-2">2반</td>
-                            <td class="role-cell">${r.공과2 || ''}</td>
-                            <td class="role-cell">${r.반주2 || ''}</td>
-                            <td class="role-cell">${r.찬양2 || ''}</td>
-                            <td class="role-cell">${r.찬율2 || ''}</td>
-                            <td class="role-cell">${r.암송2 || ''}</td>
-                            <td class="role-cell">${r.손유희2 || ''}</td>
+                            <td class="role-cell" data-role="공과2">${r.공과2 || ''}</td>
+                            <td class="role-cell" data-role="반주2">${r.반주2 || ''}</td>
+                            <td class="role-cell" data-role="찬양2">${r.찬양2 || ''}</td>
+                            <td class="role-cell" data-role="찬율2">${r.찬율2 || ''}</td>
+                            <td class="role-cell" data-role="암송2">${r.암송2 || ''}</td>
+                            <td class="role-cell" data-role="손유희2">${r.손유희2 || ''}</td>
                         </tr>
                     </table>
                 </div>
@@ -272,6 +270,51 @@ function renderByMonth(data) {
         `;
         area.appendChild(sec);
     });
+}
+
+// [검색 기능] 이름 강조 및 자동 펼치기
+function searchName() {
+    const name = document.getElementById('search-name').value.trim();
+    if (!name) {
+        alert("검색할 이름을 입력해주세요.");
+        return;
+    }
+
+    let foundCount = 0;
+
+    // 모든 셀 순회하며 강조 처리
+    document.querySelectorAll('.role-cell').forEach(td => {
+        // 기존 강조 제거 (원래 이름으로 복구)
+        if (td.querySelector('mark')) {
+            td.innerHTML = td.innerText;
+        }
+
+        const originalName = td.innerText;
+        if (originalName.includes(name)) {
+            // 강조 처리
+            td.innerHTML = originalName.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
+            
+            // 해당 주차 상세 펼치기
+            const detailArea = td.closest('.week-detail');
+            if (detailArea) detailArea.style.display = 'block';
+
+            // 해당 월 섹션 펼치기
+            const monthSec = td.closest('.month-section');
+            if (monthSec) monthSec.classList.remove('collapsed');
+            
+            foundCount++;
+        }
+    });
+
+    if (foundCount === 0) {
+        alert(`'${name}' 담당자를 찾을 수 없습니다.`);
+    } else {
+        // 첫 번째 검색 결과로 부드럽게 스크롤
+        const firstMark = document.querySelector('mark');
+        if (firstMark) {
+            firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
 }
 
 function autoExpandCurrent() {
@@ -306,32 +349,11 @@ function toggleAllMonths() {
     secs.forEach(s => isColl ? s.classList.remove('collapsed') : s.classList.add('collapsed'));
 }
 
-function searchName() {
-    const name = document.getElementById('search-name').value.trim();
-    if (!name) return;
-    document.querySelectorAll('.role-cell').forEach(td => {
-        const txt = td.innerText;
-        td.innerHTML = txt;
-        if (txt.includes(name)) {
-            td.innerHTML = txt.replace(new RegExp(name, 'g'), `<mark>${name}</mark>`);
-            td.closest('.week-detail').style.display = 'block';
-            td.closest('.month-section').classList.remove('collapsed');
-        }
-    });
-}
-
-function showMyList() {
-    const name = document.getElementById('search-name').value.trim();
-    if (!name) return alert("이름을 입력하세요");
-    const list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name))).map(r => `${r.날짜} (${r.제목})`);
-    alert(list.length ? `[${name}] 담당:\n` + list.join('\n') : "내역 없음");
-}
-
 function exportImage() {
     html2canvas(document.getElementById('table-container'), { scale: 2, backgroundColor: "#f0f2f5" }).then(canvas => {
         const link = document.createElement('a');
         link.href = canvas.toDataURL();
-        link.download = '초등부기능.png';
+        link.download = `초등부기능_${new Date().getTime()}.png`;
         link.click();
     });
 }
@@ -339,4 +361,3 @@ function exportImage() {
 
 </body>
 </html>
-
