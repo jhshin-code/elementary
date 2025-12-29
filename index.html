@@ -9,44 +9,42 @@
     <style>
         :root { --primary: #4a90e2; --highlight-bg: #fffdf5; --highlight-border: #ffc107; }
         body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
-        #table-container { max-width: 1000px; margin: 90px auto 40px; }
+        #table-container { max-width: 1000px; margin: 90px auto 40px; background: #f0f2f5; }
 
-        /* 컨트롤 영역 */
+        /* 상단 컨트롤러 */
         .controls { position: fixed; top: 0; left: 0; right: 0; background: #fff; padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); z-index: 1000; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         button { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
         .btn-green { background: #28a745; color: #fff; }
         .btn-blue { background: #007bff; color: #fff; }
         .btn-yellow { background: #ffc107; }
         input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 110px; }
 
-        /* 월별 섹션 */
+        /* 섹션 디자인 */
         .month-section { background: #fff; margin-bottom: 25px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
         .month-label { background: var(--primary); color: #fff; padding: 15px 25px; font-size: 1.15rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .month-label::after { content: '▼'; transition: .3s; }
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        /* 주차별 카드 */
+        /* 카드 디자인 */
         .week-card { border: 1px solid #e1e4e8; border-radius: 10px; margin: 15px; background: #fff; }
         .week-card.highlight { border: 2px solid var(--highlight-border) !important; background: var(--highlight-bg) !important; }
         .week-header { padding: 18px 20px; cursor: pointer; }
         
-        /* 암송 정렬 관련 수정 */
         .info-row { display: flex; gap: 10px; margin-top: 8px; font-size: .95rem; line-height: 1.5; align-items: flex-start; }
         .info-label { width: 68px; color: #888; font-weight: bold; flex-shrink: 0; white-space: nowrap; }
         .info-content { flex-grow: 1; word-break: keep-all; }
-        .link-icon { text-decoration: none; margin-left: 5px; }
+        .link-icon { text-decoration: none; margin-left: 5px; font-size: 1.1rem; }
 
-        /* 상세 테이블 */
+        /* 상세 표 */
         .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        .detail-table td { border: 1px solid #f0f0f0; padding: 12px 2px; text-align: center; font-size: 0.85rem; }
-        .role-header { background: #f8f9fa; font-weight: bold; font-size: .8rem; color: #666; }
+        .detail-table td { border: 1px solid #f0f0f0; padding: 12px 2px; text-align: center; font-size: 0.82rem; word-break: keep-all; }
+        .role-header { background: #f8f9fa; font-weight: bold; font-size: .78rem; color: #666; }
         .ban-1 { color: #28a745; font-weight: bold; }
         .ban-2 { color: #007bff; font-weight: bold; }
 
         mark { background: #fffd54; font-weight: bold; padding: 0 2px; }
-        #error-msg { color: red; text-align: center; padding: 20px; display: none; }
+        #error-msg { color: red; text-align: center; padding: 20px; display: none; background: #fff; margin: 20px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -60,18 +58,16 @@
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center;">2026 기능 요약표</h1>
-    <p style="text-align:center;color:#6c757d;">※ 다음 주 일요일이 자동으로 강조됩니다.</p>
-    <div id="error-msg">데이터(data.csv)를 불러오지 못했습니다. 파일명을 확인해주세요.</div>
+    <h1 style="text-align:center; padding-top: 20px;">2026 기능 요약표</h1>
+    <p style="text-align:center;color:#6c757d;">※ 다음 주 일요일 일정이 자동으로 강조됩니다.</p>
+    <div id="error-msg">data.csv 파일을 불러오지 못했습니다. 파일명과 대소문자를 확인해주세요.</div>
     <div id="render-area"></div>
 </div>
 
 <script>
 let csvData = [];
-let isAllExpanded = false;
 const CURRENT_YEAR = 2026;
 
-// 날짜 파싱 (1/4 또는 2026-01-04 대응)
 function parseDate(str) {
     if (!str) return null;
     let y = CURRENT_YEAR, m, d;
@@ -82,7 +78,6 @@ function parseDate(str) {
 }
 
 window.onload = () => {
-    // data.csv 파일을 불러옵니다. (캐시 방지를 위해 쿼리스트링 추가)
     Papa.parse("data.csv?v=" + new Date().getTime(), {
         download: true,
         header: true,
@@ -90,6 +85,7 @@ window.onload = () => {
         complete: res => {
             csvData = res.data.filter(r => r.날짜);
             if (csvData.length === 0) {
+                document.getElementById('error-msg').innerText = "CSV 데이터가 비어있습니다.";
                 document.getElementById('error-msg').style.display = 'block';
                 return;
             }
@@ -98,7 +94,6 @@ window.onload = () => {
             autoExpandCurrent();
         },
         error: err => {
-            console.error(err);
             document.getElementById('error-msg').style.display = 'block';
         }
     });
@@ -125,121 +120,13 @@ function renderByMonth(data) {
 
         let weeksHtml = "";
         groups[key].forEach(r => {
-            const linkTag = r.찬양링크 ? `<a href="${r.찬양링크}" target="_blank" class="link-icon">🔗</a>` : "";
+            // CSV 헤더 이름에 맞게 수정 (공백 주의)
+            const songName = r['찬양 곡명'] || '-';
+            const songLink = r['찬양 LINK'] || '';
+            const linkTag = songLink ? `<a href="${songLink}" target="_blank" class="link-icon">🔗</a>` : "";
+            
             weeksHtml += `
             <div class="week-card" id="card-${r.날짜.replace(/\//g, '-')}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
                     <b style="color:var(--primary)">${r.날짜} (일)</b><br>
-                    <b style="font-size:1.1rem;">${r.과}과: ${r.제목}</b>
-                    <div class="info-row">
-                        <span class="info-label">🎵 찬양</span>
-                        <span class="info-content">${r.찬양곡명 || '-'}${linkTag}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">📖 암송</span>
-                        <span class="info-content">${r.암송말씀 || '-'}</span>
-                    </div>
-                </div>
-                <div class="week-detail" id="det-${r.날짜.replace(/\//g, '-')}" style="display:none;padding:0 20px 20px;">
-                    <table class="detail-table">
-                        <tr class="role-header">
-                            <td style="width:12%">구분</td>
-                            <td>🎹반주</td>
-                            <td>🎤찬양</td>
-                            <td>💃찬율</td>
-                            <td>📜암송</td>
-                            <td>🙌손유희</td>
-                        </tr>
-                        <tr>
-                            <td class="ban-1">1반</td>
-                            <td class="role-cell">${r.반주1 || ''}</td><td class="role-cell">${r.찬양1 || ''}</td>
-                            <td class="role-cell">${r.찬율1 || ''}</td><td class="role-cell">${r.암송1 || ''}</td><td class="role-cell">${r.손유희1 || ''}</td>
-                        </tr>
-                        <tr>
-                            <td class="ban-2">2반</td>
-                            <td class="role-cell">${r.반주2 || ''}</td><td class="role-cell">${r.찬양2 || ''}</td>
-                            <td class="role-cell">${r.찬율2 || ''}</td><td class="role-cell">${r.암송2 || ''}</td><td class="role-cell">${r.손유희2 || ''}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>`;
-        });
-
-        sec.innerHTML = `<div class="month-label" onclick="toggleMonth('${key}')">${y}년 ${parseInt(m)}월</div>
-                         <div class="month-content">${weeksHtml}</div>`;
-        area.appendChild(sec);
-    });
-}
-
-function autoExpandCurrent() {
-    const now = new Date();
-    const nextSunday = new Date(now);
-    // 다음 주 일요일 계산
-    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7);
-    
-    const y = nextSunday.getFullYear();
-    const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
-    const curMonthKey = `${y}-${m}`;
-    
-    const sec = document.getElementById(`sec-${curMonthKey}`);
-    if (sec) sec.classList.remove('collapsed');
-
-    const targetDateStr = `${nextSunday.getMonth() + 1}-${nextSunday.getDate()}`;
-    const targetDateStrAlt = `${nextSunday.getMonth() + 1}/${nextSunday.getDate()}`;
-    const card = document.getElementById(`card-${targetDateStr}`) || document.getElementById(`card-${targetDateStrAlt.replace(/\//g, '-')}`);
-    
-    if (card) {
-        card.classList.add('highlight');
-        const detId = card.id.replace('card-', 'det-');
-        const det = document.getElementById(detId);
-        if (det) det.style.display = 'block';
-        setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
-    }
-}
-
-function toggleMonth(m) { document.getElementById(`sec-${m}`).classList.toggle('collapsed'); }
-function toggleWeek(d) {
-    const id = d.replace(/\//g, '-');
-    const el = document.getElementById(`det-${id}`);
-    if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
-}
-function toggleAllMonths() {
-    isAllExpanded = !isAllExpanded;
-    document.querySelectorAll('.month-section').forEach(s => s.classList.toggle('collapsed', !isAllExpanded));
-}
-function searchName() {
-    const name = document.getElementById('search-name').value.trim();
-    if (!name) return;
-    document.querySelectorAll('.role-cell').forEach(td => {
-        td.innerHTML = td.innerText;
-        if (td.innerText.includes(name)) {
-            td.innerHTML = `<mark>${name}</mark>`;
-            const card = td.closest('.week-card');
-            const sec = td.closest('.month-section');
-            if (card) { 
-                const det = card.querySelector('.week-detail');
-                if (det) det.style.display = 'block';
-            }
-            if (sec) sec.classList.remove('collapsed');
-        }
-    });
-}
-function showMyList() {
-    const name = document.getElementById('search-name').value.trim();
-    if (!name) { alert("이름을 입력하세요"); return; }
-    let list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name)))
-                      .map(r => `${r.날짜} (${r.제목})`);
-    alert(list.length > 0 ? `[${name}] 님 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
-}
-function exportImage() {
-    html2canvas(document.getElementById('table-container'), { scale: 2 }).then(canvas => {
-        const link = document.createElement('a');
-        link.href = canvas.toDataURL();
-        link.download = '2026_기능일정.png';
-        link.click();
-    });
-}
-</script>
-</body>
-</html>
-
+                    <b style="font-
