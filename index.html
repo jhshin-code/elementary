@@ -175,7 +175,7 @@ function autoExpandCurrent() {
     const now = new Date();
     const nextSunday = new Date(now);
     // 다음 주 일요일 계산
-    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 + 7);
+    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7);
     
     const y = nextSunday.getFullYear();
     const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
@@ -242,3 +242,4 @@ function exportImage() {
 </script>
 </body>
 </html>
+
