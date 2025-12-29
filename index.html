@@ -4,66 +4,180 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 초등부 기능</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <style>
-        :root { --primary: #4a90e2; --highlight-bg: #fffdf5; --highlight-border: #ffc107; }
-        body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; padding: 20px; margin: 0; }
-        #table-container { max-width: 1000px; margin: 90px auto 40px; background: #f0f2f5; }
 
-        /* 상단 컨트롤러 */
-        .controls { position: fixed; top: 0; left: 0; right: 0; background: #fff; padding: 12px 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); z-index: 1000; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        button { padding: 8px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --highlight-bg: #fffdf5;
+            --highlight-border: #ffc107;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+            margin: 0;
+        }
+
+        #table-container {
+            max-width: 1000px;
+            margin: 90px auto 40px;
+        }
+
+        /* 상단 컨트롤 */
+        .controls {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: #fff;
+            padding: 12px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.1);
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         .btn-green { background: #28a745; color: #fff; }
         .btn-blue { background: #007bff; color: #fff; }
         .btn-yellow { background: #ffc107; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; width: 110px; }
 
-        /* 섹션 및 카드 */
-        .month-section { background: #fff; margin-bottom: 25px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
-        .month-label { background: var(--primary); color: #fff; padding: 15px 25px; font-size: 1.15rem; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 110px;
+        }
+
+        /* 월 섹션 */
+        .month-section {
+            background: #fff;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+        .month-label {
+            background: var(--primary);
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .month-label::after { content: '▼'; transition: .3s; }
         .month-section.collapsed .month-label::after { transform: rotate(-90deg); }
         .month-section.collapsed .month-content { display: none; }
 
-        .week-card { border: 1px solid #e1e4e8; border-radius: 10px; margin: 15px; background: #fff; }
-        .week-card.highlight { border: 3px solid var(--highlight-border) !important; background: var(--highlight-bg) !important; }
-        .week-header { padding: 18px 20px; cursor: pointer; }
-        
-        .info-row { display: flex; gap: 10px; margin-top: 8px; font-size: 1rem; line-height: 1.5; align-items: flex-start; }
-        .info-label { width: 75px; color: #888; font-weight: bold; flex-shrink: 0; }
-        .info-content { flex-grow: 1; word-break: keep-all; font-weight: 500; }
-
-        /* [수정] 상세 표 및 담당자 폰트 설정 */
-        .detail-table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; border: 1px solid #eee; }
-        .detail-table td { border: 1px solid #f0f0f0; padding: 14px 2px; text-align: center; word-break: keep-all; }
-        
-        .role-header { background: #f8f9fa; font-weight: bold; font-size: 0.85rem; color: #555; height: 40px; }
-        
-        /* 담당자 이름 세포(Cell) 스타일 강화 */
-        .role-cell { 
-            font-size: 1rem;      /* 폰트 크기 키움 */
-            font-weight: 700;    /* 더 진하게 */
-            color: #222;         /* 선명한 검정색 */
-            background: #fafafa; /* 배경색을 살짝 넣어 강조 */
+        /* 주 카드 */
+        .week-card {
+            border: 1px solid #e1e4e8;
+            border-radius: 10px;
+            margin: 15px;
+            background: #fff;
         }
 
-        .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; font-size: 0.9rem; }
-        .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; font-size: 0.9rem; }
+        .week-card.highlight {
+            border: 3px solid var(--highlight-border);
+            background: var(--highlight-bg);
+        }
 
-        /* 검색 강조 효과 */
-        mark { 
-            background: #ff5722; 
-            color: white; 
-            font-weight: bold; 
-            padding: 2px 4px; 
+        .week-header {
+            padding: 18px 20px;
+            cursor: pointer;
+        }
+
+        /* 제목 스타일 */
+        .week-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+
+        .title-verse {
+            font-size: 0.85rem;   /* 말씀만 작게 */
+            color: #6c757d;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
+        /* 정보 줄 */
+        .info-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .info-label {
+            width: 75px;
+            color: #888;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .info-content {
+            flex-grow: 1;
+            font-weight: 500;
+            word-break: keep-all;
+        }
+
+        /* 상세 표 */
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            table-layout: fixed;
+        }
+
+        .detail-table td {
+            border: 1px solid #f0f0f0;
+            padding: 14px 2px;
+            text-align: center;
+        }
+
+        .role-header {
+            background: #f8f9fa;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .role-cell {
+            font-size: 1rem;
+            font-weight: 700;
+            background: #fafafa;
+        }
+
+        .ban-1 { background: #e9f7ef; color: #28a745; font-weight: 800; }
+        .ban-2 { background: #ebf5ff; color: #007bff; font-weight: 800; }
+
+        mark {
+            background: #ff5722;
+            color: white;
+            font-weight: bold;
+            padding: 2px 4px;
             border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        
-        #error-msg { color: red; text-align: center; padding: 20px; display: none; background: #fff; margin: 20px; border-radius: 8px; }
     </style>
 </head>
+
 <body>
 
 <div class="controls">
@@ -74,8 +188,8 @@
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center; padding-top: 20px;">2026 초등부 기능</h1>
-    <p style="text-align:center;color:#6c757d;">※ 담당 기능 불가 시 미리 말씀 해주세요</p>
+    <h1 style="text-align:center;">2026 초등부 기능</h1>
+    <p style="text-align:center;color:#6c757d;">※ 담당 기능 불가 시 미리 말씀해주세요</p>
     <div id="render-area"></div>
 </div>
 
@@ -102,8 +216,7 @@ window.onload = () => {
             csvData.sort((a, b) => parseDate(a.날짜) - parseDate(b.날짜));
             renderByMonth(csvData);
             autoExpandCurrent();
-        },
-        error: err => { document.getElementById('error-msg').style.display = 'block'; }
+        }
     });
 };
 
@@ -114,7 +227,7 @@ function renderByMonth(data) {
 
     data.forEach(r => {
         const d = parseDate(r.날짜);
-        if(!d) return;
+        if (!d) return;
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         if (!groups[key]) groups[key] = [];
         groups[key].push(r);
@@ -128,72 +241,77 @@ function renderByMonth(data) {
 
         let weeksHtml = "";
         groups[key].forEach(r => {
-            const songName = r['찬양 곡명'] || '-';
-            const songLink = r['찬양 LINK'] || '';
-            const linkTag = songLink ? `<a href="${songLink}" target="_blank" class="link-icon">🔗</a>` : "";
-            
             weeksHtml += `
             <div class="week-card" id="card-${r.날짜.replace(/\//g, '-')}">
                 <div class="week-header" onclick="toggleWeek('${r.날짜}')">
                     <b style="color:var(--primary)">${r.날짜} (일)</b><br>
-                    <b style="font-size:1.15rem;">${r.과}과: ${r.제목} (${r.말씀 || ''})</b>
-                    <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${songName}${linkTag}</span></div>
-                    <div class="info-row"><span class="info-label">📖 암송</span><span class="info-content">${r.암송말씀 || '-'}</span></div>
+                    <b class="week-title">
+                        ${r.과}과: ${r.제목}
+                        <span class="title-verse">(${r.말씀 || ''})</span>
+                    </b>
+
+                    <div class="info-row">
+                        <span class="info-label">🎵 찬양</span>
+                        <span class="info-content">${r['찬양 곡명'] || '-'}</span>
+                    </div>
+
+                    <div class="info-row">
+                        <span class="info-label">📖 암송</span>
+                        <span class="info-content">${r.암송말씀 || '-'}</span>
+                    </div>
                 </div>
+
                 <div class="week-detail" id="det-${r.날짜.replace(/\//g, '-')}" style="display:none;padding:0 20px 20px;">
                     <table class="detail-table">
                         <tr class="role-header">
-                            <td style="width:12%">구분</td><td>📚공과</td><td>🎹반주</td><td>🎤찬양</td><td>💃찬율</td><td>📜암송</td><td>🙌손유희</td>
+                            <td>구분</td><td>📚공과</td><td>🎹반주</td><td>🎤찬양</td>
+                            <td>💃찬율</td><td>📜암송</td><td>🙌손유희</td>
                         </tr>
                         <tr>
                             <td class="ban-1">1반</td>
-                            <td class="role-cell">${r.공과1 || ''}</td><td class="role-cell">${r.반주1 || ''}</td>
-                            <td class="role-cell">${r.찬양1 || ''}</td><td class="role-cell">${r.찬율1 || ''}</td>
-                            <td class="role-cell">${r.암송1 || ''}</td><td class="role-cell">${r.손유희1 || ''}</td>
+                            <td class="role-cell">${r.공과1 || ''}</td>
+                            <td class="role-cell">${r.반주1 || ''}</td>
+                            <td class="role-cell">${r.찬양1 || ''}</td>
+                            <td class="role-cell">${r.찬율1 || ''}</td>
+                            <td class="role-cell">${r.암송1 || ''}</td>
+                            <td class="role-cell">${r.손유희1 || ''}</td>
                         </tr>
                         <tr>
                             <td class="ban-2">2반</td>
-                            <td class="role-cell">${r.공과2 || ''}</td><td class="role-cell">${r.반주2 || ''}</td>
-                            <td class="role-cell">${r.찬양2 || ''}</td><td class="role-cell">${r.찬율2 || ''}</td>
-                            <td class="role-cell">${r.암송2 || ''}</td><td class="role-cell">${r.손유희2 || ''}</td>
+                            <td class="role-cell">${r.공과2 || ''}</td>
+                            <td class="role-cell">${r.반주2 || ''}</td>
+                            <td class="role-cell">${r.찬양2 || ''}</td>
+                            <td class="role-cell">${r.찬율2 || ''}</td>
+                            <td class="role-cell">${r.암송2 || ''}</td>
+                            <td class="role-cell">${r.손유희2 || ''}</td>
                         </tr>
                     </table>
                 </div>
             </div>`;
         });
-        sec.innerHTML = `<div class="month-label" onclick="toggleMonth('${key}')">${y}년 ${parseInt(m)}월</div><div class="month-content">${weeksHtml}</div>`;
+
+        sec.innerHTML = `
+            <div class="month-label" onclick="toggleMonth('${key}')">${y}년 ${parseInt(m)}월</div>
+            <div class="month-content">${weeksHtml}</div>
+        `;
         area.appendChild(sec);
     });
 }
 
-function autoExpandCurrent() {
-    const now = new Date();
-    const nextSunday = new Date(now);
-    nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 );
-    const y = nextSunday.getFullYear();
-    const m = String(nextSunday.getMonth() + 1).padStart(2, '0');
-    const sec = document.getElementById(`sec-${y}-${m}`);
-    if (sec) sec.classList.remove('collapsed');
-    const target = `card-${nextSunday.getMonth() + 1}-${nextSunday.getDate()}`;
-    const card = document.getElementById(target) || document.getElementById(target.replace('-', '/'));
-    if (card) {
-        card.classList.add('highlight');
-        document.getElementById(card.id.replace('card-', 'det-')).style.display = 'block';
-        setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500);
-    }
+function toggleMonth(m) {
+    document.getElementById(`sec-${m}`).classList.toggle('collapsed');
 }
 
-function toggleMonth(m) { document.getElementById(`sec-${m}`).classList.toggle('collapsed'); }
 function toggleWeek(d) {
     const id = d.replace(/\//g, '-');
     const el = document.getElementById(`det-${id}`);
-    if (el) el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
+
 function toggleAllMonths() {
-    const sections = document.querySelectorAll('.month-section');
-    const anyExpanded = Array.from(sections).some(s => !s.classList.contains('collapsed'));
-    sections.forEach(s => s.classList.toggle('collapsed', anyExpanded));
+    document.querySelectorAll('.month-section').forEach(s => s.classList.toggle('collapsed'));
 }
+
 function searchName() {
     const name = document.getElementById('search-name').value.trim();
     if (!name) return;
@@ -201,19 +319,21 @@ function searchName() {
         td.innerHTML = td.innerText;
         if (td.innerText.includes(name)) {
             td.innerHTML = `<mark>${name}</mark>`;
-            const card = td.closest('.week-card');
-            const sec = td.closest('.month-section');
-            if (card) card.querySelector('.week-detail').style.display = 'block';
-            if (sec) sec.classList.remove('collapsed');
+            td.closest('.week-card').querySelector('.week-detail').style.display = 'block';
+            td.closest('.month-section').classList.remove('collapsed');
         }
     });
 }
+
 function showMyList() {
     const name = document.getElementById('search-name').value.trim();
-    if (!name) { alert("이름을 입력하세요"); return; }
-    let list = csvData.filter(r => Object.values(r).some(v => v.toString().includes(name))).map(r => `${r.날짜} (${r.제목})`);
-    alert(list.length > 0 ? `[${name}] 님 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
+    if (!name) return alert("이름을 입력하세요");
+    const list = csvData
+        .filter(r => Object.values(r).some(v => v.toString().includes(name)))
+        .map(r => `${r.날짜} (${r.제목})`);
+    alert(list.length ? `[${name}] 담당:\n` + list.join('\n') : "담당 내역이 없습니다.");
 }
+
 function exportImage() {
     html2canvas(document.getElementById('table-container'), { scale: 2 }).then(canvas => {
         const link = document.createElement('a');
@@ -223,8 +343,6 @@ function exportImage() {
     });
 }
 </script>
+
 </body>
 </html>
-
-
-
