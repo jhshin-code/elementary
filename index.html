@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 기능 요약표</title>
+    <title>2026 초등부 기능</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
@@ -69,13 +69,12 @@
 <div class="controls">
     <button class="btn-green" onclick="toggleAllMonths()">모든 달 펼치기/접기</button>
     <input id="search-name" placeholder="이름 입력" onkeyup="if(event.keyCode==13)searchName()">
-    <button class="btn-blue" onclick="searchName()">검색</button>
     <button class="btn-yellow" onclick="showMyList()">내 기능 보기</button>
     <button class="btn-blue" onclick="exportImage()">📸 캡처</button>
 </div>
 
 <div id="table-container">
-    <h1 style="text-align:center; padding-top: 20px;">2026 기능 요약표</h1>
+    <h1 style="text-align:center; padding-top: 20px;">2026 초등부 기능</h1>
     <p style="text-align:center;color:#6c757d;">※ 담당 기능 불가 시 미리 말씀 해주세요</p>
     <div id="render-area"></div>
 </div>
@@ -226,5 +225,6 @@ function exportImage() {
 </script>
 </body>
 </html>
+
 
 
