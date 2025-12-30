@@ -336,8 +336,171 @@ function exportImage() {
         link.click();
     });
 }
+
+<script>
+let csvData = [];
+const CURRENT_YEAR = 2026; // 데이터에 년도가 없으므로 2026년으로 고정
+
+// 링크 생성 함수
+function linkify(text) {
+    if (!text || text.trim() === "") return "";
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.toString().replace(urlPattern, '<a href="$1" target="_blank" class="link-text"> 🔗Link</a>');
+}
+
+// [수정 핵심] 어떤 날짜 형식이든 숫자만 뽑아서 처리하는 함수
+function parseDate(str) {
+    if (!str || typeof str !== 'string') return null;
+
+    // 숫자만 추출 (예: "01월 04일" -> ["01", "04"])
+    const nums = str.match(/\d+/g);
+    if (!nums || nums.length < 2) return null;
+
+    let y, m, d;
+    if (nums.length >= 3) {
+        // 년-월-일 형식이 다 있을 때
+        y = parseInt(nums[0]);
+        m = parseInt(nums[1]);
+        d = parseInt(nums[2]);
+    } else {
+        // 월-일 형식만 있을 때 (현재 유저의 데이터)
+        y = CURRENT_YEAR;
+        m = parseInt(nums[0]);
+        d = parseInt(nums[1]);
+    }
+
+    const date = new Date(y, m - 1, d);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+window.onload = () => {
+    Papa.parse("data.csv?v=" + new Date().getTime(), {
+        download: true, 
+        header: true, 
+        skipEmptyLines: true,
+        complete: res => {
+            // 헤더 이름에 공백이 있을 수 있어 정리 후 필터링
+            csvData = res.data.filter(r => r['날짜'] || r[' 날짜']); 
+            
+            // 날짜 순으로 정렬
+            csvData.sort((a, b) => {
+                const dateA = parseDate(a['날짜'] || a[' 날짜']);
+                const dateB = parseDate(b['날짜'] || b[' 날짜']);
+                return (dateA || 0) - (dateB || 0);
+            });
+            
+            renderByMonth(csvData);
+            autoExpandCurrent();
+        }
+    });
+};
+
+function renderByMonth(data) {
+    const area = document.getElementById('render-area');
+    area.innerHTML = "";
+    const groups = {};
+
+    data.forEach(r => {
+        const dateStr = r['날짜'] || r[' 날짜'];
+        const d = parseDate(dateStr);
+        if (!d) return;
+
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(r);
+    });
+
+    Object.keys(groups).sort().forEach(key => {
+        const [year, month] = key.split('-');
+        const sec = document.createElement('div');
+        sec.className = "month-section collapsed";
+        sec.id = `sec-${key}`;
+
+        let weeksHtml = "";
+        groups[key].forEach(r => {
+            const dateStr = r['날짜'] || r[' 날짜'];
+            const weekId = dateStr.replace(/[^0-9]/g, '-'); // 숫자 외 기호는 ID용으로 변경
+            
+            weeksHtml += `
+            <div class="week-card" id="card-${weekId}">
+                <div class="week-header" onclick="toggleWeek('${dateStr}')">
+                    <b style="color:var(--primary); font-size:0.85rem;">${dateStr} (일)</b><br>
+                    <b class="week-title">${r.제목 || ''} <span class="title-verse">(${r.말씀 || ''})</span></b>
+                    <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${r['찬양 곡명'] || '-'} ${linkify(r['찬양 LINK'])}</span></div>
+                    <div class="info-row"><span class="info-label">📖 암송</span><span class="info-content">${r.암송말씀 || '-'}</span></div>
+                </div>
+
+                <div class="week-detail" id="det-${weekId}" style="display:none; padding:0 8px 15px;">
+                    <table class="detail-table">
+                        <tr class="role-header">
+                            <td style="width:12%">구분</td>
+                            <td style="width:14.5%">📚공과</td><td style="width:14.5%">🎹반주</td>
+                            <td style="width:14.5%">🎤찬양</td><td style="width:14.5%">💃찬율</td>
+                            <td style="width:14.5%">📜암송</td><td style="width:15%">🙌손유희</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-1">1반</td>
+                            <td class="role-cell">${r.공과1 || ''}</td><td class="role-cell">${r.반주1 || ''}</td>
+                            <td class="role-cell">${r.찬양1 || ''}</td><td class="role-cell">${r.찬율1 || ''}</td>
+                            <td class="role-cell">${r.암송1 || ''}</td><td class="role-cell">${r.손유희1 || ''}</td>
+                        </tr>
+                        <tr>
+                            <td class="ban-2">2반</td>
+                            <td class="role-cell">${r.공과2 || ''}</td><td class="role-cell">${r.반주2 || ''}</td>
+                            <td class="role-cell">${r.찬양2 || ''}</td><td class="role-cell">${r.찬율2 || ''}</td>
+                            <td class="role-cell">${r.암송2 || ''}</td><td class="role-cell">${r.손유희2 || ''}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>`;
+        });
+
+        sec.innerHTML = `
+            <div class="month-label" onclick="toggleMonth('${key}')">${year}년 ${parseInt(month)}월</div>
+            <div class="month-content">${weeksHtml}</div>
+        `;
+        area.appendChild(sec);
+    });
+}
+
+// 이하 searchName, autoExpandCurrent, toggle 함수들은 기존과 거의 동일하나 
+// dateStr 처리 부분만 안전하게 수정됨
+function toggleWeek(d) {
+    const weekId = d.replace(/[^0-9]/g, '-');
+    const el = document.getElementById(`det-${weekId}`);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function autoExpandCurrent() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 오늘 이후 가장 가까운 날짜 찾기
+    const current = csvData.find(r => parseDate(r['날짜'] || r[' 날짜']) >= today) || csvData[0];
+
+    if (current) {
+        const dateStr = current['날짜'] || current[' 날짜'];
+        const d = parseDate(dateStr);
+        const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const wId = dateStr.replace(/[^0-9]/g, '-');
+
+        document.getElementById(`sec-${mKey}`)?.classList.remove('collapsed');
+        const det = document.getElementById(`det-${wId}`);
+        if(det) det.style.display = 'block';
+        const card = document.getElementById(`card-${wId}`);
+        if(card) {
+            card.classList.add('highlight');
+            setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 600);
+        }
+    }
+}
+
+// (기타 나머지 함수들: searchName, toggleMonth, toggleAllMonths, exportImage는 기존 코드 유지)
+function searchName() {
+    const name    
 </script>
 
 </body>
 </html>
+
 
