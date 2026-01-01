@@ -202,10 +202,18 @@ function parseDate(str) {
 }
 
 window.onload = () => {
-    Papa.parse("data.csv?v=" + new Date().getTime(), {
-        download: true, header: true, skipEmptyLines: true,
+    // 1. 여기에 복사한 구글 시트 CSV 링크를 넣으세요.
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCT98M6IJgCXCZ8GY97fp7rM4m5yfnku-hblMWbroPpqRMLYxVSrUaF2PVs605ALE9xQCaKKqa8pPR/pub?gid=0&single=true&output=csv";
+
+    // 캐시 방지를 위해 뒤에 타임스탬프를 붙입니다.
+    Papa.parse(SHEET_URL + "&v=" + new Date().getTime(), {
+        download: true, 
+        header: true, 
+        skipEmptyLines: true,
         complete: res => {
-            csvData = res.data.filter(r => r['날짜'] || r[' 날짜']);
+            // 구글 시트에서 가져올 때 컬럼명 앞뒤 공백이 생길 수 있으므로 처리
+            csvData = res.data.filter(r => (r['날짜'] || r[' 날짜']));
+            
             csvData.sort((a, b) => {
                 const dA = parseDate(a['날짜'] || a[' 날짜']);
                 const dB = parseDate(b['날짜'] || b[' 날짜']);
@@ -338,3 +346,4 @@ function exportImage() {
 </script>
 </body>
 </html>
+
