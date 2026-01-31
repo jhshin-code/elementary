@@ -251,7 +251,7 @@ function renderByMonth(data) {
             weeksHtml += `
             <div class="week-card" id="card-${weekId}">
                 <div class="week-header" onclick="toggleWeek('${dateStr}')">
-                    <b style="color:var(--primary); font-size:0.85rem;">${dateStr} (일)</b><br>
+                    <b style="color:var(--primary); font-size:0.85rem;">${dateStr} </b><br>
                     <b class="week-title">${r.제목 || ''} <span class="title-verse">(${r.말씀 || ''})</span></b>
                     <div class="info-row"><span class="info-label">🎵 찬양</span><span class="info-content">${r['찬양 곡명'] || '-'} ${linkify(r['찬양 LINK'])}</span></div>
                     <div class="info-row"><span class="info-label">📖 암송</span><span class="info-content">${r.암송말씀 || '-'}</span></div>
@@ -346,4 +346,5 @@ function exportImage() {
 </script>
 </body>
 </html>
+
 
